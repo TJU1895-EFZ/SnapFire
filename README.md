@@ -251,7 +251,7 @@ npx electron .
 测试状态：
 
 - `npm run typecheck` 通过；
-- `npm test`：5 个测试文件、29 项测试通过；
+- `npm test`：6 个测试文件、35 项测试通过；
 - `npm run build` 通过；
 - `npm run test:smoke`：两个 Electron 实例，假摄像头，完整走通大厅 → 战斗 → 开火 → 结算 → 战绩保存 → 返回大厅；
 - 便携 zip 已构建并测试：`release/SnapFire-0.1.0-win-x64.zip`（约 158MB）；打包后的 `SnapFire.exe` 和解压 zip 均通过完整双实例冒烟（Human 模型从 asar 离线加载）；

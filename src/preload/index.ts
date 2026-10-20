@@ -26,6 +26,11 @@ const api: SnapFireApi = {
   },
   app: {
     info: () => ipcRenderer.invoke('app:info')
+  },
+  fieldLog: {
+    append: (entry) => ipcRenderer.invoke('field-log:append', entry),
+    info: () => ipcRenderer.invoke('field-log:info'),
+    openDirectory: () => ipcRenderer.invoke('field-log:open')
   }
 }
 

@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { AppSettings, Team } from '@shared/types'
+import type { AppInfo, AppSettings, Team } from '@shared/types'
+import type {
+  FieldLogRef,
+  FieldRecognition,
+  FieldServerResult,
+  FieldSource,
+  FieldTestBlock
+} from '@shared/fieldLog'
+import { deriveFieldOutcome } from '@shared/fieldLog'
 import { useCamera } from '../hooks/useCamera'
 import { useServerClock } from '../hooks/useServerClock'
 import { BattleScene, type LockState } from '../game/BattleScene'
@@ -7,12 +15,50 @@ import { VisionEngine, type VisionFrameResult } from '../vision/engine'
 import { audio } from '../game/audio'
 import { formatClock } from '../utils/format'
 import type { RoomSession } from '../types'
+import {
+  endFieldSession,
+  getFieldSessionId,
+  localIsoNow,
+  logFieldAnalyzeError,
+  logFieldShot,
+  makeFieldSessionId,
+  startFieldSession,
+  toFieldRef
+} from '../fieldLog'
 import { IconAlert, IconCrosshair, IconShield, IconUsers } from '../components/Icons'
 
 interface BattleScreenProps {
   session: RoomSession
   settings: AppSettings
+  appInfo: AppInfo | null
   onLeave: () => void
+}
+
+interface PendingFieldShot {
+  sessionId: string
+  shotSeq: number
+  firedAt: string
+  sentAt: number
+  block: FieldTestBlock
+  intended: FieldLogRef | null
+  recognized: FieldRecognition | null
+  debug: {
+    detectMs: number
+    bodyCount: number
+    canvasWidth: number
+    canvasHeight: number
+    cameraWidth: number | null
+    cameraHeight: number | null
+    source: FieldSource
+  }
+  timer: number | null
+}
+
+interface LastFieldOutcome {
+  shotSeq: number
+  outcome: string
+  intendedName: string | null
+  recognizedName: string | null
 }
 
 interface LockInfo {
@@ -51,6 +97,7 @@ const REASON_TEXT: Record<string, string> = {
 export function BattleScreen({
   session,
   settings,
+  appInfo,
   onLeave
 }: BattleScreenProps): React.JSX.Element {
   const camera = useCamera({ autoStart: true, deviceId: settings.cameraDeviceId })
@@ -73,6 +120,23 @@ export function BattleScreen({
   const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null)
   const [sceneError, setSceneError] = useState<string | null>(null)
   const [visionWarm, setVisionWarm] = useState(false)
+  const [fieldBlock, setFieldBlock] = useState<FieldTestBlock>({
+    distanceM: 3,
+    orientation: 'front',
+    lighting: 'normal'
+  })
+  const [intendedId, setIntendedId] = useState<string | null>(null)
+  const [fieldSessionId, setFieldSessionId] = useState<string | null>(null)
+  const [lastFieldOutcome, setLastFieldOutcome] = useState<LastFieldOutcome | null>(
+    null
+  )
+
+  const fieldBlockRef = useRef<FieldTestBlock>(fieldBlock)
+  const intendedIdRef = useRef<string | null>(null)
+  const shotSeqRef = useRef(0)
+  const pendingShotRef = useRef<PendingFieldShot | null>(null)
+  const resolutionRef = useRef(resolution)
+  const appInfoRef = useRef(appInfo)
 
   const serverNow = useServerClock(session.room)
 
@@ -83,6 +147,14 @@ export function BattleScreen({
   useEffect(() => {
     settingsRef.current = settings
   }, [settings])
+
+  useEffect(() => {
+    resolutionRef.current = resolution
+  }, [resolution])
+
+  useEffect(() => {
+    appInfoRef.current = appInfo
+  }, [appInfo])
 
   useEffect(() => {
     onLeaveRef.current = onLeave
@@ -96,6 +168,99 @@ export function BattleScreen({
   useEffect(() => {
     selfTeamRef.current = selfPlayer?.team ?? null
   }, [selfPlayer?.team])
+
+  // --- Field test logging ---------------------------------------------------
+  const fieldCandidates = useMemo(
+    () => session.room.players.filter((player) => player.id !== session.selfId),
+    [session.room.players, session.selfId]
+  )
+  const intendedPlayer = useMemo(
+    () => fieldCandidates.find((player) => player.id === intendedId) ?? null,
+    [fieldCandidates, intendedId]
+  )
+
+  const chooseIntended = useCallback((id: string | null) => {
+    intendedIdRef.current = id
+    setIntendedId(id)
+  }, [])
+
+  const updateFieldBlock = useCallback((patch: Partial<FieldTestBlock>) => {
+    setFieldBlock((previous) => {
+      const next = { ...previous, ...patch }
+      fieldBlockRef.current = next
+      return next
+    })
+  }, [])
+
+  const finalizePendingShot = useCallback(
+    (error: string | null, server?: FieldServerResult) => {
+      const pending = pendingShotRef.current
+      if (!pending) return
+      pendingShotRef.current = null
+      if (pending.timer !== null) {
+        window.clearTimeout(pending.timer)
+        pending.timer = null
+      }
+      const derived = deriveFieldOutcome({
+        intended: pending.intended,
+        recognized: pending.recognized,
+        server: server ?? null
+      })
+      const outcome = error ? 'ERROR' : derived.outcome
+      logFieldShot({
+        sessionId: pending.sessionId,
+        shotSeq: pending.shotSeq,
+        at: pending.firedAt,
+        block: pending.block,
+        intended: pending.intended,
+        recognized: pending.recognized,
+        debug: pending.debug,
+        server: server ?? null,
+        outcome,
+        recognitionCorrect: derived.recognitionCorrect,
+        damageToWrongPlayer: derived.damageToWrongPlayer,
+        latencyMs: server ? Date.now() - pending.sentAt : null,
+        error: error ?? undefined
+      })
+      setLastFieldOutcome({
+        shotSeq: pending.shotSeq,
+        outcome,
+        intendedName: pending.intended?.name ?? null,
+        recognizedName: pending.recognized?.name ?? null
+      })
+    },
+    []
+  )
+
+  useEffect(() => {
+    if (!settingsRef.current.fieldTestLog) return
+    const current = sessionRef.current
+    const self = current.room.players.find((player) => player.id === current.selfId)
+    if (!self) return
+    const info = appInfoRef.current
+    const id = makeFieldSessionId(current.room.roomCode)
+    startFieldSession({
+      sessionId: id,
+      at: localIsoNow(),
+      appVersion: info?.version ?? 'unknown',
+      platform: info?.platform ?? 'unknown',
+      roomCode: current.room.roomCode,
+      isHost: current.isHost,
+      self: toFieldRef(self),
+      players: current.room.players.map(toFieldRef),
+      detectionQuality: settingsRef.current.detectionQuality,
+      camera: resolutionRef.current
+        ? { width: resolutionRef.current.width, height: resolutionRef.current.height }
+        : { width: null, height: null }
+    })
+    setFieldSessionId(id)
+    return () => {
+      finalizePendingShot('离开战斗，未收到服务端结果')
+      endFieldSession()
+    }
+    // One session per battle-screen mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // --- Three.js weapon view model -----------------------------------------
   useEffect(() => {
@@ -202,6 +367,13 @@ export function BattleScreen({
   useEffect(() => {
     const off = session.net.on((event) => {
       if (event.type === 'shot-result') {
+        finalizePendingShot(null, {
+          hit: event.hit,
+          killed: Boolean(event.killed),
+          targetId: event.targetId,
+          hp: event.hp,
+          reason: event.reason
+        })
         if (event.hit) {
           setHitMarker((value) => value + 1)
           audio.hit()
@@ -231,7 +403,7 @@ export function BattleScreen({
       }
     })
     return off
-  }, [session.net, session.selfId])
+  }, [session.net, session.selfId, finalizePendingShot])
 
   useEffect(() => {
     if (!feedback) return
@@ -261,30 +433,117 @@ export function BattleScreen({
     sceneRef.current?.fire()
     audio.gunshot()
 
+    const fieldSession = settingsRef.current.fieldTestLog
+      ? getFieldSessionId()
+      : null
+    const block = { ...fieldBlockRef.current }
+    const intendedPlayerNow = intendedIdRef.current
+      ? room.players.find((player) => player.id === intendedIdRef.current) ?? null
+      : null
+    const intended = intendedPlayerNow ? toFieldRef(intendedPlayerNow) : null
+    const shotSeq = fieldSession ? ++shotSeqRef.current : 0
+    const firedAt = localIsoNow()
+
     const engine = engineRef.current
     if (!engine) {
       resolvingRef.current = false
+      if (fieldSession) {
+        logFieldAnalyzeError({
+          sessionId: fieldSession,
+          shotSeq,
+          at: firedAt,
+          block,
+          intended,
+          message: '识别引擎未就绪'
+        })
+        setLastFieldOutcome({
+          shotSeq,
+          outcome: 'ERROR',
+          intendedName: intended?.name ?? null,
+          recognizedName: null
+        })
+      }
       return
     }
     void engine
       .analyzeNow()
       .then((result) => {
         const live = sessionRef.current
-        if (!live || live.room.phase !== 'playing') return
         const liveSelf = live.room.players.find((player) => player.id === live.selfId)
-        if (!liveSelf?.alive) return
-        live.net.send({
+        const stillPlaying = live.room.phase === 'playing' && Boolean(liveSelf?.alive)
+        const recognized: FieldRecognition | null = result?.match
+          ? {
+              id: result.match.playerId,
+              name: result.match.name,
+              team: result.match.team,
+              confidence: result.match.confidence,
+              source: result.match.source,
+              faceScore: result.match.faceScore,
+              clothingScore: result.match.clothingScore
+            }
+          : null
+        const source: FieldSource =
+          result?.match?.source ?? (result?.clothing ? 'descriptor-only' : 'none')
+        const debug = {
+          detectMs: result?.durationMs ?? 0,
+          bodyCount: result?.bodyCount ?? 0,
+          canvasWidth: result?.canvasWidth ?? 0,
+          canvasHeight: result?.canvasHeight ?? 0,
+          cameraWidth: resolutionRef.current?.width ?? null,
+          cameraHeight: resolutionRef.current?.height ?? null,
+          source
+        }
+        if (fieldSession) {
+          const pending: PendingFieldShot = {
+            sessionId: fieldSession,
+            shotSeq,
+            firedAt,
+            sentAt: Date.now(),
+            block,
+            intended,
+            recognized,
+            debug,
+            timer: null
+          }
+          pending.timer = window.setTimeout(
+            () => finalizePendingShot('服务端结果超时'),
+            5000
+          )
+          pendingShotRef.current = pending
+        }
+        if (!stillPlaying) {
+          finalizePendingShot('开火后比赛已结束')
+          return
+        }
+        const sent = live.net.send({
           type: 'shot',
           targetId: result?.match?.playerId ?? null
         })
+        if (!sent) finalizePendingShot('网络发送失败')
       })
-      .catch(() => {
+      .catch((error) => {
+        if (fieldSession) {
+          logFieldAnalyzeError({
+            sessionId: fieldSession,
+            shotSeq,
+            at: firedAt,
+            block,
+            intended,
+            message: error instanceof Error ? error.message : '识别失败'
+          })
+          setLastFieldOutcome({
+            shotSeq,
+            outcome: 'ERROR',
+            intendedName: intended?.name ?? null,
+            recognizedName: null
+          })
+        }
         setFeedback({ text: '识别失败，本次未命中', tone: 'error' })
       })
       .finally(() => {
         resolvingRef.current = false
       })
-  }, [])
+  }, [finalizePendingShot])
 
   const requestLeave = useCallback(() => {
     if (window.confirm('确定离开本局吗？离开后将回到首页。')) {
@@ -294,8 +553,29 @@ export function BattleScreen({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
+      const target = event.target as HTMLElement | null
+      const typing =
+        target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
+
+      if (settingsRef.current.fieldTestLog && !typing && !event.repeat) {
+        const live = sessionRef.current
+        const candidates = live.room.players.filter(
+          (player) => player.id !== live.selfId
+        )
+        if (event.key === '0') {
+          event.preventDefault()
+          chooseIntended(null)
+          return
+        }
+        const index = Number.parseInt(event.key, 10)
+        if (Number.isInteger(index) && index >= 1 && index <= candidates.length) {
+          event.preventDefault()
+          chooseIntended(candidates[index - 1].id)
+          return
+        }
+      }
+
       if (event.code === 'Space' && !event.repeat) {
-        const target = event.target as HTMLElement | null
         if (target && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target.tagName)) {
           return
         }
@@ -308,7 +588,7 @@ export function BattleScreen({
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [fire, requestLeave])
+  }, [fire, requestLeave, chooseIntended])
 
   const room = session.room
   const self = selfPlayer
@@ -574,6 +854,111 @@ export function BattleScreen({
           <div className="scene-warning">
             <IconAlert />
             <span>{sceneError}</span>
+          </div>
+        )}
+
+        {settings.fieldTestLog && (
+          <div
+            className="field-test-panel"
+            onMouseDown={(event) => event.stopPropagation()}
+            onContextMenu={(event) => event.stopPropagation()}
+          >
+            <div className="field-test-panel__head">
+              <span>FIELD TEST</span>
+              <strong>{fieldSessionId ?? '记录中'}</strong>
+            </div>
+            <div className="field-test-row">
+              <span>距离</span>
+              {[3, 6, 10].map((distance) => (
+                <button
+                  key={distance}
+                  type="button"
+                  className={fieldBlock.distanceM === distance ? 'is-active' : ''}
+                  onClick={() => updateFieldBlock({ distanceM: distance })}
+                >
+                  {distance}m
+                </button>
+              ))}
+            </div>
+            <div className="field-test-row">
+              <span>朝向</span>
+              <button
+                type="button"
+                className={fieldBlock.orientation === 'front' ? 'is-active' : ''}
+                onClick={() => updateFieldBlock({ orientation: 'front' })}
+              >
+                正面
+              </button>
+              <button
+                type="button"
+                className={fieldBlock.orientation === 'back' ? 'is-active' : ''}
+                onClick={() => updateFieldBlock({ orientation: 'back' })}
+              >
+                背面
+              </button>
+            </div>
+            <div className="field-test-row">
+              <span>光照</span>
+              <button
+                type="button"
+                className={fieldBlock.lighting === 'normal' ? 'is-active' : ''}
+                onClick={() => updateFieldBlock({ lighting: 'normal' })}
+              >
+                正常
+              </button>
+              <button
+                type="button"
+                className={fieldBlock.lighting === 'dim' ? 'is-active' : ''}
+                onClick={() => updateFieldBlock({ lighting: 'dim' })}
+              >
+                偏暗
+              </button>
+              <button
+                type="button"
+                className={fieldBlock.lighting === 'backlit' ? 'is-active' : ''}
+                onClick={() => updateFieldBlock({ lighting: 'backlit' })}
+              >
+                逆光
+              </button>
+            </div>
+            <div className="field-test-row field-test-row--targets">
+              <span>意图</span>
+              {fieldCandidates.map((player, index) => (
+                <button
+                  key={player.id}
+                  type="button"
+                  className={intendedId === player.id ? 'is-active' : ''}
+                  onClick={() => chooseIntended(player.id)}
+                >
+                  {index + 1} {player.name}
+                </button>
+              ))}
+              <button
+                type="button"
+                className={intendedId === null ? 'is-active' : ''}
+                onClick={() => chooseIntended(null)}
+              >
+                清除
+              </button>
+            </div>
+            <div className="field-test-panel__hint">
+              {intendedPlayer
+                ? `意图：${intendedPlayer.name} · 数字键 1-${fieldCandidates.length}`
+                : '未标注意图：该枪不计入正确率'}
+            </div>
+            {lastFieldOutcome && (
+              <div
+                className={`field-test-last field-test-last--${lastFieldOutcome.outcome.toLowerCase()}`}
+              >
+                #{lastFieldOutcome.shotSeq} {lastFieldOutcome.outcome}
+                {lastFieldOutcome.intendedName
+                  ? ` · 意图 ${lastFieldOutcome.intendedName}`
+                  : ''}
+                {lastFieldOutcome.recognizedName
+                  ? ` · 识别 ${lastFieldOutcome.recognizedName}`
+                  : ''}
+              </div>
+            )}
           </div>
         )}
 

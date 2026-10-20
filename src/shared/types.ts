@@ -1,6 +1,13 @@
 // Shared types and constants used by the Electron main process, preload,
 // and the React renderer.
 
+import type {
+  FieldLogAppendResult,
+  FieldLogEntry,
+  FieldLogInfo,
+  FieldLogOpenResult
+} from './fieldLog'
+
 export type Team = 'red' | 'blue'
 export type MatchPhase = 'lobby' | 'countdown' | 'playing' | 'ended'
 export type GameMode = 'urban'
@@ -32,7 +39,8 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   volume: 0.8,
   detectionQuality: 'balanced',
   cameraDeviceId: null,
-  showDebug: false
+  showDebug: false,
+  fieldTestLog: false
 }
 
 export interface RoomSettings {
@@ -200,6 +208,8 @@ export interface AppSettings {
   detectionQuality: DetectionQuality
   cameraDeviceId: string | null
   showDebug: boolean
+  /** Writes per-shot recognition diagnostics to a local JSONL file. */
+  fieldTestLog: boolean
 }
 
 export interface HistoryData {
@@ -260,5 +270,10 @@ export interface SnapFireApi {
   }
   app: {
     info: () => Promise<AppInfo>
+  }
+  fieldLog: {
+    append: (entry: FieldLogEntry) => Promise<FieldLogAppendResult>
+    info: () => Promise<FieldLogInfo>
+    openDirectory: () => Promise<FieldLogOpenResult>
   }
 }

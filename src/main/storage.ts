@@ -164,7 +164,8 @@ export class Storage {
             : DEFAULT_APP_SETTINGS.detectionQuality,
         cameraDeviceId:
           typeof stored?.cameraDeviceId === 'string' ? stored.cameraDeviceId : null,
-        showDebug: Boolean(stored?.showDebug)
+        showDebug: Boolean(stored?.showDebug),
+        fieldTestLog: Boolean(stored?.fieldTestLog)
       }
     }
     return this.settings

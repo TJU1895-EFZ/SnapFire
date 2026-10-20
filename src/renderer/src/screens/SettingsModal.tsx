@@ -7,6 +7,7 @@ import {
   IconCheck,
   IconClose,
   IconDownload,
+  IconPulse,
   IconRefresh,
   IconSettings,
   IconShield,
@@ -45,10 +46,25 @@ export function SettingsModal({
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([])
   const [busy, setBusy] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
+  const [fieldLogPath, setFieldLogPath] = useState<string | null>(null)
 
   useEffect(() => {
     void listCameras().then(setCameras)
   }, [])
+
+  useEffect(() => {
+    void window.snapfire.fieldLog
+      .info()
+      .then((info) => setFieldLogPath(info.directory))
+      .catch(() => setFieldLogPath(null))
+  }, [])
+
+  const openFieldLogDirectory = async (): Promise<void> => {
+    const result = await window.snapfire.fieldLog.openDirectory()
+    if (!result.ok) {
+      showToast(result.error ?? '无法打开日志目录', 'error')
+    }
+  }
 
   const exportBackup = async (): Promise<void> => {
     setBusy(true)
@@ -186,6 +202,42 @@ export function SettingsModal({
                 onChange={(event) => onChange({ showDebug: event.target.checked })}
               />
             </label>
+          </section>
+
+          <section className="settings-section">
+            <div className="settings-section__head">
+              <IconPulse />
+              <div>
+                <h3>场地测试日志</h3>
+                <p>为真人验收逐枪记录识别分数与服务端结果；只写本机 JSONL，不保存图像。</p>
+              </div>
+            </div>
+            <label className="toggle-row">
+              <span>
+                <strong>启用逐枪日志</strong>
+                <small>战斗页显示 FIELD TEST 面板，用于标注距离、朝向、光照和意图目标。</small>
+              </span>
+              <input
+                type="checkbox"
+                checked={settings.fieldTestLog}
+                onChange={(event) => onChange({ fieldTestLog: event.target.checked })}
+              />
+            </label>
+            <div className="data-path">
+              <span>日志目录</span>
+              <code>{fieldLogPath ?? '—'}</code>
+            </div>
+            <button
+              className="secondary-button"
+              onClick={() => void openFieldLogDirectory()}
+              disabled={busy}
+            >
+              打开日志目录
+            </button>
+            <p className="settings-hint">
+              日志包含玩家昵称、识别分数和比赛结果，仅保存在本机，不会随备份导出。JSONL
+              可直接用于核对现场记录表；提交前请按 field-tests/README.md 脱敏。
+            </p>
           </section>
 
           <section className="settings-section">

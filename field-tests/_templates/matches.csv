@@ -1,0 +1,1 @@
+match_id,session_id,start_time,end_time,end_reason,score_a,score_b,host_reported_score,client_reported_score,sync_ok,crashed,memory_start_mb,memory_end_mb,notes

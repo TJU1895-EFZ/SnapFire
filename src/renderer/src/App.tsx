@@ -22,6 +22,7 @@ import { HistoryModal } from './screens/HistoryModal'
 import { NetClient, normalizeHostAddress, type NetEvent } from './net/NetClient'
 import { warmupHuman } from './vision/human'
 import { audio } from './game/audio'
+import { logFieldMatchEnd } from './fieldLog'
 import type { RoomSession, ToastTone } from './types'
 import { SnapFireMark, IconAlert, IconRefresh } from './components/Icons'
 
@@ -230,6 +231,13 @@ export function App(): React.JSX.Element {
         }
         case 'match-end': {
           const result = event.result
+          if (settingsRef.current?.fieldTestLog) {
+            logFieldMatchEnd(
+              result,
+              result.score,
+              sessionRef.current?.room.roomCode ?? ''
+            )
+          }
           setSession((previous) => {
             if (!previous) return previous
             const room: RoomPublicState = {
@@ -553,6 +561,7 @@ export function App(): React.JSX.Element {
       <BattleScreen
         session={session}
         settings={settings}
+        appInfo={appInfo}
         onLeave={() => void leaveRoom()}
       />
     )

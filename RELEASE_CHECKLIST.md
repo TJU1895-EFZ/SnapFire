@@ -76,7 +76,7 @@ git push origin v0.1.0
 
 推送 tag 后，`.github/workflows/release.yml` 会：
 
-- 在 `windows-latest` 上安装依赖、类型检查、29 项测试、构建；
+- 在 `windows-latest` 上安装依赖、类型检查、35 项测试、构建；
 - 用 electron-builder 生成 `SnapFire-0.1.0-win-x64.zip`；
 - 生成 `SHA256SUMS.txt`；
 - 创建或更新 **v0.1.0 测试版** 的 GitHub Release（`--prerelease`）。

@@ -923,6 +923,112 @@
   }
 }
 
+.field-test-panel {
+  position: absolute;
+  left: 20px;
+  top: 340px;
+  z-index: 12;
+  width: 320px;
+  padding: 9px 10px;
+  border: 1px solid rgba(255, 155, 69, 0.38);
+  background: rgba(4, 7, 8, 0.84);
+  font-family: ui-monospace, Consolas, 'Courier New', monospace;
+  font-size: 9px;
+  line-height: 1.35;
+  color: var(--text-dim);
+}
+
+.field-test-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+  color: #ff9b45;
+  letter-spacing: 0.08em;
+}
+
+.field-test-panel__head strong {
+  overflow: hidden;
+  font-weight: 400;
+  font-size: 8px;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.field-test-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.field-test-row > span {
+  width: 26px;
+  color: rgba(255, 255, 255, 0.32);
+}
+
+.field-test-row button {
+  max-width: 84px;
+  padding: 2px 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  font: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.field-test-row button:hover {
+  border-color: rgba(255, 155, 69, 0.5);
+  color: #ffb06a;
+}
+
+.field-test-row button.is-active {
+  border-color: #ff9b45;
+  background: rgba(255, 155, 69, 0.12);
+  color: #ffb06a;
+}
+
+.field-test-panel__hint {
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.field-test-last {
+  margin-top: 5px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.field-test-last--correct {
+  color: #7ee2a8;
+}
+
+.field-test-last--wrong,
+.field-test-last--error {
+  color: #ff6b6b;
+}
+
+.field-test-last--no_match,
+.field-test-last--friendly,
+.field-test-last--invalid,
+.field-test-last--unlabeled {
+  color: #ffc46b;
+}
+
+@media (max-height: 700px) {
+  .field-test-panel {
+    top: 300px;
+  }
+}
+
 @media (max-width: 1200px) {
   .battle-roster {
     width: 190px;

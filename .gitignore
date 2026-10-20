@@ -15,3 +15,12 @@ playwright-report/
 .env.*
 .DS_Store
 Thumbs.db
+
+# Field test raw evidence: keep locally, never commit faces/video.
+field-tests/**/raw/
+field-tests/**/*.mp4
+field-tests/**/*.mov
+field-tests/**/*.mkv
+field-tests/**/*.avi
+field-tests/**/*.wav
+field-tests/**/*.m4a

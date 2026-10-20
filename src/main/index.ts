@@ -1,8 +1,9 @@
-import { app, BrowserWindow, dialog, ipcMain, protocol, session } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, protocol, session, shell } from 'electron'
 import { existsSync, promises as fs } from 'node:fs'
 import { extname, join, normalize, sep } from 'node:path'
 import { Storage } from './storage'
 import { LanServer } from './lanServer'
+import { FieldLog } from './fieldLog'
 import type {
   AppSettings,
   AppearanceData,
@@ -59,6 +60,7 @@ const MIME_TYPES: Record<string, string> = {
 let mainWindow: BrowserWindow | null = null
 let storage: Storage
 let lanServer: LanServer
+let fieldLog: FieldLog
 
 function createWindow(): void {
   const iconPath = [
@@ -224,12 +226,28 @@ function registerIpc(): void {
     userDataPath: storage.getDirectory(),
     platform: process.platform
   }))
+
+  ipcMain.handle('field-log:append', (_event, entry: unknown) => fieldLog.append(entry))
+  ipcMain.handle('field-log:info', () => fieldLog.info())
+  ipcMain.handle('field-log:open', async () => {
+    try {
+      await fieldLog.ensureDirectory()
+      const error = await shell.openPath(fieldLog.getDirectory())
+      return error ? { ok: false, error } : { ok: true }
+    } catch (error) {
+      return {
+        ok: false,
+        error: error instanceof Error ? error.message : '无法打开日志目录'
+      }
+    }
+  })
 }
 
 app.whenReady().then(async () => {
   storage = new Storage()
   await storage.init()
   await storage.writeAutoBackup()
+  fieldLog = new FieldLog()
   lanServer = new LanServer()
   if (process.env['SNAPFIRE_TEST'] === '1') {
     ;(globalThis as unknown as { __snapfireTest?: { endMatch: () => void } }).__snapfireTest = {

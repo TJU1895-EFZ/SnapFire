@@ -1,0 +1,1 @@
+shot_id,session_id,shot_seq,timestamp,distance_m,orientation,lighting,shooter,intended_target,intended_team,system_target,system_team,outcome,server_reason,hit,killed,confidence,source,face_score,clothing_score,detect_ms,bodies,target_hp_before,target_hp_after,evidence_ref,notes

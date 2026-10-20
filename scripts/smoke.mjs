@@ -1,6 +1,6 @@
 import { _electron as electron } from 'playwright-core'
 import electronPath from 'electron'
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -49,7 +49,8 @@ async function prepareUserData(dir) {
     volume: 0.8,
     detectionQuality: 'balanced',
     cameraDeviceId: null,
-    showDebug: true
+    showDebug: true,
+    fieldTestLog: true
   }
   await writeFile(join(dataDir, 'settings.json'), JSON.stringify(settings, null, 2), 'utf8')
 }
@@ -79,6 +80,32 @@ let hostPage = null
 let clientPage = null
 let hostData = null
 let clientData = null
+
+async function readFieldLog(userDataDir) {
+  const dir = join(userDataDir, 'field-logs')
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    const files = await readdir(dir).catch(() => [])
+    if (files.length > 0) {
+      const raw = await readFile(join(dir, files[0]), 'utf8').catch(() => '')
+      const entries = raw
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => {
+          try {
+            return JSON.parse(line)
+          } catch {
+            return null
+          }
+        })
+        .filter(Boolean)
+      if (entries.some((entry) => entry.type === 'shot')) {
+        return { dir, files, entries }
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100))
+  }
+  return { dir, files: [], entries: [] }
+}
 
 console.log('APP', packagedExe ? `packaged: ${packagedExe}` : 'source: electron .')
 
@@ -226,6 +253,28 @@ try {
     throw new Error(`Expected an unrecognised-target response, got: ${shotFeedback}`)
   }
 
+  const fieldLog = await readFieldLog(hostData)
+  const fieldSession = fieldLog.entries.find((entry) => entry.type === 'session')
+  const fieldShot = fieldLog.entries.find((entry) => entry.type === 'shot')
+  if (!fieldSession) {
+    throw new Error('Field-test JSONL is missing the session entry')
+  }
+  if (!fieldShot || fieldShot.server?.reason !== 'no-target') {
+    throw new Error(
+      `Field-test JSONL did not record the shot: ${JSON.stringify(fieldShot ?? null)}`
+    )
+  }
+  if (fieldShot.debug?.detectMs === undefined || fieldShot.debug?.source === undefined) {
+    throw new Error('Field-test shot entry is missing recognition diagnostics')
+  }
+  console.log('FIELD_LOG', {
+    file: fieldLog.files[0],
+    entries: fieldLog.entries.length,
+    outcome: fieldShot.outcome,
+    detectMs: fieldShot.debug.detectMs,
+    source: fieldShot.debug.source
+  })
+
   const battlePlayers = await host.page.locator('.roster-row').count().catch(() => 0)
 
   // Test-only hook: finish the match without waiting for the 5 minute timer.
@@ -245,6 +294,13 @@ try {
   if (!resultsText.includes('平局') && !resultsText.includes('获胜')) {
     throw new Error('Results screen did not show a winner or draw')
   }
+  const fieldLogAfterMatch = await readFieldLog(hostData)
+  const fieldMatchEnd = fieldLogAfterMatch.entries.find(
+    (entry) => entry.type === 'match-end'
+  )
+  if (!fieldMatchEnd) {
+    throw new Error('Field-test JSONL is missing the match-end entry')
+  }
   await host.page.screenshot({ path: join(artifactsDir, '12-results-host.png') })
   await client.page.screenshot({ path: join(artifactsDir, '13-results-client.png') })
 
@@ -258,7 +314,13 @@ try {
     joinAddress,
     battlePlayers,
     shotFeedback,
-    resultsFlow: 'ok'
+    resultsFlow: 'ok',
+    fieldLog: {
+      file: fieldLog.files[0],
+      entries: fieldLogAfterMatch.entries.length,
+      shotOutcome: fieldShot.outcome,
+      matchEnd: Boolean(fieldMatchEnd)
+    }
   })
   console.log('VISION_LOGS', relevantLogs.filter((line) => line.includes('[vision]')).join('\n'))
   if (errors.length > 0) {
