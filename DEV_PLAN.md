@@ -217,6 +217,18 @@ SnapFire/
   - 下载 Release zip 校验一致；解压后对 CI 构建的 `SnapFire.exe` 完整冒烟通过。
 - 本次发布执行了 Git 初始化、提交、`main` 推送、`v0.1.0` tag 推送（使用已授权的 GitHub CLI 账号）。
 
+**v0.1.1 发布（2026-10-21）**
+
+- 新增场地测试 JSONL 日志、FIELD TEST 面板、`field-tests/` 数据模板与复核流程。
+- `npm test`：6 个测试文件、35 项测试通过；`typecheck`、`build`、源码冒烟、打包冒烟均通过。
+- 本地便携包：`release/SnapFire-0.1.1-win-x64.zip`，SHA256 `4a8c8484da0324ba7b211af23d6be93d846f918f096eccfa3a5f73df1129add5`。
+- GitHub Release：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v0.1.1
+  - 标题：SnapFire v0.1.1（非预发布，Latest）
+  - Workflow：[run 39456848369](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/39456848369) — success
+  - CI SHA256：`05f2cd9b3bfd36359d208981a2aeea38347dbc67b1a461befc2d1951f36d99bc`
+  - 下载校验一致；解压后 CI 构建完整冒烟通过，JSONL 写入正常。
+- 发布工作流调整：普通版本 tag 发布为 latest，带 `-rc` / `-beta` 的 tag 才标为预发布；SHA256SUMS 改为 LF。
+
 > **当前剩余事项**：
 > 真实硬件/真人现场验收（G4/G5：真实双机局域网、真人建档/识别、10 米红线、6 人实机、备份对话框、目标笔记本性能），按 `TEST_REPORT.md` 第 4 节执行。
 

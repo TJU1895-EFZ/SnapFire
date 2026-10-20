@@ -11,7 +11,12 @@
 > - Workflow：[run 39267114421](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/39267114421) — success
 > - CI SHA256：`260d6d78012712ad5d1d9e06d09f1111f676bd6bac7e88dcece29d9271ce30ae`
 >
-> v0.1.1 的发布结果在 CI 完成后记录到 `TEST_REPORT.md`。
+> **v0.1.1 已于 2026-10-21 发布（Latest，非预发布）**
+>
+> - Release：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v0.1.1
+> - Workflow：[run 39456848369](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/39456848369) — success
+> - CI SHA256：`05f2cd9b3bfd36359d208981a2aeea38347dbc67b1a461befc2d1951f36d99bc`
+> - 详细验证见 `TEST_REPORT.md` §3.7 / §3.8。
 
 ## 1. 发布前
 

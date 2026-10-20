@@ -230,7 +230,23 @@ npm run dist:win
 
 ### 3.8 v0.1.1 GitHub Release 发布结果
 
-> CI 完成后补充：workflow run、资产大小、CI SHA256、下载校验与解压冒烟结果。
+- 仓库：https://github.com/TJU1895-EFZ/SnapFire
+- Release：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v0.1.1
+- 标题：**SnapFire v0.1.1**（`isPrerelease: false`，标记为 **Latest**）
+- Workflow：[run 39456848369](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/39456848369) — **success**（3m32s）
+- 资产：
+  - `SnapFire-0.1.1-win-x64.zip` — 165,557,465 bytes
+  - `SHA256SUMS.txt` — 94 bytes
+- CI 构建 SHA256：
+
+```text
+05f2cd9b3bfd36359d208981a2aeea38347dbc67b1a461befc2d1951f36d99bc  SnapFire-0.1.1-win-x64.zip
+```
+
+- 下载 GitHub Release 的 zip 并校验：计算值与 `SHA256SUMS.txt` **一致**。
+- 解压 Release 资产后，对 CI 构建的 `SnapFire.exe` 运行完整双实例冒烟：**SMOKE_OK**，`resultsFlow: 'ok'`，`fieldLog.matchEnd = true`；Human 模型从 asar 离线加载成功。
+- 本地构建 SHA256（`4a8c...`）与 CI 构建不同，属正常现象；以 Release 中的 `SHA256SUMS.txt` 为准。
+- 备注：CI 生成的 `SHA256SUMS.txt` 使用 CRLF 换行；在 Git Bash 中用 `sha256sum -c` 前需先执行 `tr -d '\r'`，或直接用 PowerShell 的 `Get-FileHash` 对照。后续版本的 workflow 已改为生成 LF。
 
 ---
 
