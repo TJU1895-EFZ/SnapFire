@@ -65,9 +65,11 @@ jobs:
             NOTES_ARGS=(--generate-notes)
           fi
 
-          # Tags with a suffix (v1.0.0-rc.1, -beta.1) are pre-releases.
-          # Plain version tags (v0.1.1, v1.0.0) are published as latest.
-          if [[ "$TAG" == *-* ]]; then
+          # 0.x and suffixed tags (v1.0.0-rc.1, -beta.1) are pre-releases.
+          # v1.0.0 and later plain tags are published as latest.
+          VERSION="${TAG#v}"
+          MAJOR="${VERSION%%.*}"
+          if [[ "$TAG" == *-* || ! "$MAJOR" =~ ^[0-9]+$ || "$MAJOR" -lt 1 ]]; then
             RELEASE_TITLE="SnapFire ${TAG} 测试版"
             RELEASE_ARGS=(--prerelease)
           else

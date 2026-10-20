@@ -232,7 +232,8 @@ npm run dist:win
 
 - 仓库：https://github.com/TJU1895-EFZ/SnapFire
 - Release：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v0.1.1
-- 标题：**SnapFire v0.1.1**（`isPrerelease: false`，标记为 **Latest**）
+- 标题：**SnapFire v0.1.1 测试版**（`isPrerelease: true`；0.x 策略，不标 Latest）
+- 发布后调整：v0.1.1 最初按普通版本发布并标记为 Latest，随后按 0.x 策略改为 Pre-release；tag 和资产未变。
 - Workflow：[run 39456848369](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/39456848369) — **success**（3m32s）
 - 资产：
   - `SnapFire-0.1.1-win-x64.zip` — 165,557,465 bytes

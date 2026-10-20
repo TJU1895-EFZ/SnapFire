@@ -256,7 +256,7 @@ npx electron .
 - `npm run build` 通过；
 - `npm run test:smoke`：两个 Electron 实例，假摄像头，完整走通大厅 → 战斗 → 开火 → 结算 → 战绩保存 → 返回大厅；
 - 便携 zip 已构建并测试：`release/SnapFire-0.1.1-win-x64.zip`（约 158MB）；打包后的 `SnapFire.exe` 和解压 zip 均通过完整双实例冒烟（Human 模型从 asar 离线加载），并校验场地测试 JSONL 的 `session` / `shot` / `match-end`；
-- **GitHub Release v0.1.1 已发布（Latest）**：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v0.1.1；CI [run 39456848369](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/39456848369) 通过；CI SHA256 `05f2cd9b...`；下载校验一致，解压后完整冒烟通过；
+- **GitHub Release v0.1.1 测试版已发布（Pre-release）**：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v0.1.1；CI [run 39456848369](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/39456848369) 通过；CI SHA256 `05f2cd9b...`；下载校验一致，解压后完整冒烟通过；
 - 真实双机/真人识别、10 米、6 人实机、备份对话框、目标笔记本性能：待按 `TEST_REPORT.md` 第 4 节人工验收。
 
 ---
@@ -285,7 +285,7 @@ npm run dist:win
 - `release/win-unpacked/`（本地测试用）
 - zip 内含 `README.md`、`LICENSE`、`THIRD_PARTY_NOTICES.md`、`third-party-licenses/` 和离线模型
 
-推送 tag 后，GitHub Actions 会自动构建并创建 **v0.1.1** 发布（普通版本标签作为 latest；带 `-rc` / `-beta` 的标签才会标为预发布）：
+推送 tag 后，GitHub Actions 会自动构建并创建 **v0.1.1 测试版** 预发布（0.x 和带 `-rc` / `-beta` 的标签都标为预发布；`v1.0.0` 及以后才发布为 latest）：
 
 ```powershell
 git tag v0.1.1

@@ -11,7 +11,7 @@
 > - Workflow：[run 39267114421](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/39267114421) — success
 > - CI SHA256：`260d6d78012712ad5d1d9e06d09f1111f676bd6bac7e88dcece29d9271ce30ae`
 >
-> **v0.1.1 已于 2026-10-21 发布（Latest，非预发布）**
+> **v0.1.1 已于 2026-10-21 发布（Pre-release，0.x 测试版）**
 >
 > - Release：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v0.1.1
 > - Workflow：[run 39456848369](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/39456848369) — success
@@ -92,13 +92,13 @@ git push origin v0.1.1
 - 在 `windows-latest` 上安装依赖、类型检查、35 项测试、构建；
 - 用 electron-builder 生成 `SnapFire-0.1.1-win-x64.zip`；
 - 生成 `SHA256SUMS.txt`；
-- 创建 **v0.1.1** 的 GitHub Release，并标记为 **latest**。
-- 只有 tag 带后缀（如 `v1.0.0-rc.1`、`v1.0.0-beta.1`）时才创建预发布。
+- 创建 **v0.1.1 测试版** 的 GitHub Release，并标记为 **Pre-release**。
+- 0.x 版本和带后缀的 tag（如 `v1.0.0-rc.1`、`v1.0.0-beta.1`）都创建预发布；`v1.0.0` 及以后才标记为 latest。
 
 ## 5. 发布后检查
 
-- [ ] Release 标题为 `SnapFire v0.1.1`
-- [ ] Release 不是预发布，且标记为 Latest
+- [ ] Release 标题为 `SnapFire v0.1.1 测试版`
+- [ ] Release 标记为 Pre-release（0.x 策略，不标 Latest）
 - [ ] 资产包含 `SnapFire-0.1.1-win-x64.zip` + `SHA256SUMS.txt`
 - [ ] Release 正文与 `release-notes/v0.1.1.md` 一致
 - [ ] 下载 zip 并校验 SHA256
