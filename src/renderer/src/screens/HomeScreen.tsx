@@ -87,7 +87,7 @@ export function HomeScreen({
             <span className="status-dot" />
             本地模式 · 离线可用
           </span>
-          <span className="version-tag">V{appInfo?.version ?? '0.1.0'}</span>
+          <span className="version-tag">V{appInfo?.version ?? '0.1.1'}</span>
         </div>
       </header>
 

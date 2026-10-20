@@ -29,7 +29,7 @@
 | 备份 / 恢复 | ✅ 已完成 | 自动备份、手动导出/导入、恢复前备份；单元测试通过 |
 | 全局样式 / 响应式 | ✅ 已完成 | 首页/入口/大厅/建档/战斗/结算/设置/战绩；首页/大厅/建档/战斗截图已检查 |
 | 自动化测试 / 验收 | 🟡 进行中 | 35/35 测试通过；双实例 UI 冒烟通过（含场地测试 JSONL）；真实双机/真人识别验收待完成 |
-| README / 交付说明 | ✅ 已完成 | README、TEST_REPORT、Apache-2.0 LICENSE、第三方声明、便携 zip、GitHub Actions；已发布 v0.1.0 测试版 |
+| README / 交付说明 | ✅ 已完成 | README、TEST_REPORT、Apache-2.0 LICENSE、第三方声明、便携 zip、GitHub Actions；已发布 v0.1.1（v0.1.0 为历史预发布） |
 
 ### 0.2 完成定义（DoD）
 
@@ -174,7 +174,7 @@ SnapFire/
 | M8 | 备份/恢复 | M2 | ✅ |
 | M9 | 全局样式与响应式 | M4/M6/M7 | ✅ |
 | M10 | 自动化 + 手工验收 | 全部 | 🟡（自动化与 UI 冒烟通过；真实双机/真人识别待验收） |
-| M11 | README 与交付 | M10 | ✅（已发布 v0.1.0 测试版） |
+| M11 | README 与交付 | M10 | ✅（已发布 v0.1.1；v0.1.0 为历史预发布） |
 
 ### 进度更新（2026-10-19）
 
@@ -187,7 +187,7 @@ SnapFire/
 | Phase E 设置/备份 | E1-E6：备份类型、存储备份、IPC、预加载、设置页、损坏提示；存储/备份测试通过 | 备份导出/导入对话框手工验收 |
 | Phase F 视觉样式 | F1-F5：全局/首页/子页/战斗/结算样式；首页、入口、大厅、建档、战斗、结算截图已检查 | 1366×768/全屏尺寸复核 |
 | Phase G 测试 | G1：`typecheck` + `build` 通过；G2/G3：35/35 测试通过；UI 冒烟通过（含场地测试 JSONL） | G4：双笔记本手工验收；G5：目标硬件性能观察 |
-| Phase H 交付 | `README.md`、`TEST_REPORT.md`、生产构建、应用图标、`start-snapfire.cmd`、Apache-2.0 `LICENSE`、`THIRD_PARTY_NOTICES.md`、第三方许可证、便携 zip、electron-builder 配置、GitHub Actions 发布工作流、Release 说明与检查清单；**v0.1.0 测试版已发布** | 真实设备验收签字 |
+| Phase H 交付 | `README.md`、`TEST_REPORT.md`、生产构建、应用图标、`start-snapfire.cmd`、Apache-2.0 `LICENSE`、`THIRD_PARTY_NOTICES.md`、第三方许可证、便携 zip、electron-builder 配置、GitHub Actions 发布工作流、Release 说明与检查清单；**v0.1.1 已发布** | 真实设备验收签字 |
 
 **已执行的验证命令与结果**
 

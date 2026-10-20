@@ -2,7 +2,7 @@
 
 SnapFire（SnapFire MR 实景枪战）是一个面向真实场地的**混合现实（MR）真人枪战应用**。玩家各自捧着 Windows 笔记本，把摄像头当作枪口、屏幕当作瞄准镜，在真实房间里移动、瞄准、射击。
 
-> **当前发布：v0.1.0 测试版。** 首个可玩模式是「团战 → 巷战（室内）」。**团战不是产品的全部**：SnapFire 的目标是让真人枪战在普通笔记本上落地，后续会扩展野战（室外）和其他真人枪战玩法。v0.1.0 尚未完成真实双机/真人现场验收，适合小范围测试，不建议作为正式商业版本。
+> **当前发布：v0.1.1。** 首个可玩模式是「团战 → 巷战（室内）」。**团战不是产品的全部**：SnapFire 的目标是让真人枪战在普通笔记本上落地，后续会扩展野战（室外）和其他真人枪战玩法。v0.1.1 仍未完成真实双机/真人现场验收，适合小范围测试，不建议作为正式商业版本。
 
 ---
 
@@ -55,7 +55,7 @@ SnapFire（SnapFire MR 实景枪战）是一个面向真实场地的**混合现�
 - 排行榜、商城、皮肤、语音、观战、回放
 - 自动匹配/排位
 - 断线重连、复杂反作弊
-- 正式安装包/自动更新（v0.1.0 以便携 zip 分发）
+- 正式安装包/自动更新（v0.1.1 以便携 zip 分发）
 
 ---
 
@@ -63,17 +63,17 @@ SnapFire（SnapFire MR 实景枪战）是一个面向真实场地的**混合现�
 
 ### 3.1 普通玩家：下载 Release 便携版（推荐）
 
-v0.1.0 测试版以便携 zip 发布：
+v0.1.1 以便携 zip 发布：
 
 1. 打开本项目的 **GitHub Releases** 页面：https://github.com/TJU1895-EFZ/SnapFire/releases
-2. 下载 `SnapFire-0.1.0-win-x64.zip` 和 `SHA256SUMS.txt`。
+2. 下载 `SnapFire-0.1.1-win-x64.zip` 和 `SHA256SUMS.txt`。
 3. 解压到任意可写目录（例如 `D:\Games\SnapFire`；不要解压到需要管理员权限的目录）。
 4. 双击 `SnapFire.exe`。
 
 可选校验（与 `SHA256SUMS.txt` 对照）：
 
 ```powershell
-Get-FileHash .\SnapFire-0.1.0-win-x64.zip -Algorithm SHA256
+Get-FileHash .\SnapFire-0.1.1-win-x64.zip -Algorithm SHA256
 ```
 
 特点：
@@ -239,14 +239,15 @@ npx electron .
 
 ## 6. 当前状态、限制与测试
 
-- **版本**：v0.1.0 测试版；代码功能完成，自动化测试通过；真实双机/真人现场验收待完成。
+- **版本**：v0.1.1；代码功能完成，自动化测试通过；真实双机/真人现场验收待完成。
 - **识别距离**：设计目标最远 10 米；10 米处人脸通常不可用，主要靠衣着。逆光、暗光、相似服装会降低成功率。
 - **不误扣原则**：识别不确定时按未命中处理，不猜测目标；公开测试前请用真机验证“不得扣错人”红线。
 - **美术**：首页角色为原创 SVG；手臂/枪械为 Three.js 基础几何体占位模型，不是最终美术。
 - **玩法**：当前只有团战/巷战；野战、身体部位伤害、换弹、多武器、排行/商城/语音/观战等未开发。
 - **网络**：局域网；无登录、无云、无公网联机；无断线重连。
 - **数据**：本地 JSON，未加密；请勿在公用电脑保存敏感照片。
-- **分发**：v0.1.0 为便携 zip，无安装包/自动更新；未签名可能触发 SmartScreen。
+- **分发**：v0.1.1 为便携 zip，无安装包/自动更新；未签名可能触发 SmartScreen。
+- **场地测试**：设置中可启用逐枪 JSONL 日志（默认关闭，仅本机，不记录图像）；流程见 `field-tests/README.md`。
 
 测试状态：
 
@@ -254,8 +255,8 @@ npx electron .
 - `npm test`：6 个测试文件、35 项测试通过；
 - `npm run build` 通过；
 - `npm run test:smoke`：两个 Electron 实例，假摄像头，完整走通大厅 → 战斗 → 开火 → 结算 → 战绩保存 → 返回大厅；
-- 便携 zip 已构建并测试：`release/SnapFire-0.1.0-win-x64.zip`（约 158MB）；打包后的 `SnapFire.exe` 和解压 zip 均通过完整双实例冒烟（Human 模型从 asar 离线加载）；
-- **GitHub Release v0.1.0 测试版已发布**：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v0.1.0；下载的 Release zip SHA256 校验一致，解压后完整冒烟通过；
+- 便携 zip 已构建并测试：`release/SnapFire-0.1.1-win-x64.zip`（约 158MB）；打包后的 `SnapFire.exe` 和解压 zip 均通过完整双实例冒烟（Human 模型从 asar 离线加载），并校验场地测试 JSONL 的 `session` / `shot` / `match-end`；
+- **GitHub Release v0.1.1 已发布**：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v0.1.1；下载的 Release zip SHA256 校验一致，解压后完整冒烟通过；
 - 真实双机/真人识别、10 米、6 人实机、备份对话框、目标笔记本性能：待按 `TEST_REPORT.md` 第 4 节人工验收。
 
 ---
@@ -268,7 +269,7 @@ npm run typecheck    # 类型检查
 npm test             # 单元/集成测试
 npm run build        # 生产构建
 npm run test:smoke   # 双实例 UI 冒烟（假摄像头）
-npm run dist:win     # 生成便携 zip（release/SnapFire-0.1.0-win-x64.zip）
+npm run dist:win     # 生成便携 zip（release/SnapFire-0.1.1-win-x64.zip）
 npx electron .       # 运行构建产物
 ```
 
@@ -280,15 +281,15 @@ npm run dist:win
 
 产物：
 
-- `release/SnapFire-0.1.0-win-x64.zip`（约 158MB，解压后双击 `SnapFire.exe`）
+- `release/SnapFire-0.1.1-win-x64.zip`（约 158MB，解压后双击 `SnapFire.exe`）
 - `release/win-unpacked/`（本地测试用）
 - zip 内含 `README.md`、`LICENSE`、`THIRD_PARTY_NOTICES.md`、`third-party-licenses/` 和离线模型
 
-推送 tag 后，GitHub Actions 会自动构建并创建 **v0.1.0 测试版** 预发布：
+推送 tag 后，GitHub Actions 会自动构建并创建 **v0.1.1** 发布（普通版本标签作为 latest；带 `-rc` / `-beta` 的标签才会标为预发布）：
 
 ```powershell
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
 完整步骤见 `RELEASE_CHECKLIST.md`；工作流文件为 `.github/workflows/release.yml`。
@@ -318,7 +319,7 @@ start-snapfire.cmd           双击启动已构建版本（源码模式）
 build/icon.ico               应用图标
 electron-builder.yml         便携 zip 打包配置
 .github/workflows/release.yml  GitHub Actions Release
-release-notes/v0.1.0.md      发布说明
+release-notes/v0.1.1.md      发布说明
 RELEASE_CHECKLIST.md         发布检查清单
 LICENSE                      Apache License 2.0
 THIRD_PARTY_NOTICES.md       第三方组件声明

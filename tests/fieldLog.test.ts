@@ -36,7 +36,7 @@ function sessionEntry(): FieldLogEntry {
     type: 'session',
     sessionId: 'FT-1',
     at: '2026-11-08T14:00:00.000+08:00',
-    appVersion: '0.1.0',
+    appVersion: '0.1.1',
     platform: 'win32',
     roomCode: '1234',
     isHost: true,

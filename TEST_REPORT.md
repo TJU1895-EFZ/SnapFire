@@ -1,9 +1,9 @@
 # SnapFire 测试报告
 
-- 日期：2026-10-19
-- 版本：V0.1.0（V1 范围）
+- 日期：2026-10-19（初版）；2026-10-21 更新 v0.1.1
+- 版本：V0.1.1（V1 范围 + 场地测试日志）
 - 依据：`PRD.md`、`DEV_PLAN.md`
-- 结论：**自动化测试与 UI 冒烟全部通过；真实双机/真人识别验收待执行。**
+- 结论：**自动化测试与 UI 冒烟全部通过（含场地测试 JSONL）；真实双机/真人识别验收待执行。**
 
 ---
 
@@ -160,7 +160,7 @@ npm run test:smoke
 
 > 枪口火花/后坐力持续约 120ms/160ms；静态截图的采集延迟可能错过火花，实际运行时在 60fps 下可见。冒烟以“开火回执”作为开火链路通过的依据。
 
-### 3.5 便携 zip 打包与打包后冒烟
+### 3.5 v0.1.0 便携 zip 打包与打包后冒烟
 
 构建命令：
 
@@ -194,7 +194,7 @@ npm run dist:win
 5a478f7e8f755b0ba3001d1394369ec82cae443976c221386a1eeb3c61624ba7  SnapFire-0.1.0-win-x64.zip
 ```
 
-### 3.6 GitHub Release 发布结果
+### 3.6 v0.1.0 GitHub Release 发布结果
 
 - 仓库：https://github.com/TJU1895-EFZ/SnapFire
 - Release：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v0.1.0
@@ -212,6 +212,25 @@ npm run dist:win
 - 下载 GitHub Release 的 zip 并校验：与 `SHA256SUMS.txt` **一致**。
 - 解压 Release 资产后，对 CI 构建的 `SnapFire.exe` 再次运行完整双实例冒烟：**SMOKE_OK**，`resultsFlow: 'ok'`；Human 模型从 asar 离线加载成功。
 - 本地构建的 SHA256（`5a478f...`）与 CI 构建不同，属正常现象；以 Release 中的 `SHA256SUMS.txt` 为准。
+
+### 3.7 v0.1.1 本地构建与打包后冒烟
+
+- 版本：`0.1.1`（`package.json` / `package-lock.json` / asar 内一致）
+- 构建：`npm run dist:win`（electron-builder 26.15.3）
+- 产物：`release/SnapFire-0.1.1-win-x64.zip`
+- 本地 SHA256：
+
+```text
+4a8c8484da0324ba7b211af23d6be93d846f918f096eccfa3a5f73df1129add5  SnapFire-0.1.1-win-x64.zip
+```
+
+- 对 `release/win-unpacked/SnapFire.exe` 运行打包冒烟：**SMOKE_OK**，`resultsFlow: 'ok'`，`fieldLog.matchEnd = true`
+- 解压 zip 后对解压出的 `SnapFire.exe` 再次运行：**SMOKE_OK**，同样写入 `session` / `shot` / `match-end`
+- 本地构建与 CI 构建 SHA 不同，以 Release 中的 `SHA256SUMS.txt` 为准。
+
+### 3.8 v0.1.1 GitHub Release 发布结果
+
+> CI 完成后补充：workflow run、资产大小、CI SHA256、下载校验与解压冒烟结果。
 
 ---
 
@@ -285,7 +304,7 @@ npm run dist:win
 2. **10 米是识别难点**：人脸通常不可用，主要依赖衣着；逆光、暗光、相似服装会降低成功率。当前阈值是保守初始值，需要真实现场校准。
 3. **部位伤害未实现**：V1 统一 25 血/枪。
 4. **美术为占位**：首页角色为原创 SVG；手臂/枪械为 Three.js 基础几何体拼装，未使用正式模型。
-5. **无正式安装包**：v0.1.0 以便携 zip 分发（解压后双击 `SnapFire.exe`）；未做签名安装包/自动更新。
+5. **无正式安装包**：v0.1.1 以便携 zip 分发（解压后双击 `SnapFire.exe`）；未做签名安装包/自动更新。
 6. **无断线重连**：队员断线后本局不再恢复；房主离开关闭房间。
 7. **启动预热**：首次启动加载并预热识别模型需要数秒到十几秒，加载页会停留；这是为了避免战斗中首帧推理卡顿。
 8. **房主地址显示**：界面只显示第一个局域网 IPv4；多网卡/VPN 环境请用 `ipconfig` 选择正确地址，客户端可手动输入。
@@ -335,8 +354,9 @@ npx electron .
 ## 7. 结论
 
 - 代码层面的 V1 功能已实现：首页、房间、组队、建档、识别、AR 战斗、命中/复活/计时、结算、历史、设置、备份/恢复。
+- 新增 v0.1.1 场地测试支持：逐枪 JSONL 日志、FIELD TEST 面板、`field-tests/` 数据模板与复核流程。
 - 自动化测试 35/35 通过；类型检查和构建通过；两个 Electron 实例的 UI 冒烟通过（含完整「战斗 → 结算 → 战绩保存 → 返回大厅」以及场地测试 JSONL 的 session/shot/match-end 写入）。
-- 便携 zip 已构建并通过打包后冒烟：`release/SnapFire-0.1.0-win-x64.zip`（157.9 MB），解压后的 `SnapFire.exe` 可正常加载 asar 内的离线模型并完成完整流程。
-- GitHub Actions 发布工作流、Release 说明和检查清单已准备；**实际 GitHub 上传/Release 尚未执行**（需要仓库地址与认证，且未执行任何 Git 操作）。
+- 便携 zip 已构建并通过打包后冒烟：`release/SnapFire-0.1.1-win-x64.zip`，解压后的 `SnapFire.exe` 可正常加载 asar 内的离线模型并完成完整流程；打包后冒烟同样校验了 JSONL。
+- GitHub Actions 发布工作流已更新：普通版本 tag 发布为 latest，带 `-rc` / `-beta` 的 tag 才标为预发布。
 - 关键的**真实双机/真人识别验收**尚未执行，需按第 4 节在目标场地完成；尤其是 10 米识别和“不得错误归属”红线。
 - 建议下一步：用 2 台真机完成 M-01~M-10，再根据现场数据调整 `src/renderer/src/vision/descriptors.ts` 中的 `FACE_ACCEPT`、`CLOTHING_ACCEPT` 和识别质量档位。

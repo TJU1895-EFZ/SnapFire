@@ -304,7 +304,7 @@ export function SettingsModal({
             </div>
             <div className="about-grid">
               <span>版本</span>
-              <strong>V{appInfo?.version ?? '0.1.0'}</strong>
+              <strong>V{appInfo?.version ?? '0.1.1'}</strong>
               <span>平台</span>
               <strong>{appInfo?.platform ?? 'win32'}</strong>
               <span>模式</span>

@@ -68,17 +68,27 @@ jobs:
             NOTES_ARGS=(--generate-notes)
           fi
 
+          # Tags with a suffix (v1.0.0-rc.1, -beta.1) are pre-releases.
+          # Plain version tags (v0.1.1, v1.0.0) are published as latest.
+          if [[ "$TAG" == *-* ]]; then
+            RELEASE_TITLE="SnapFire ${TAG} 测试版"
+            RELEASE_ARGS=(--prerelease)
+          else
+            RELEASE_TITLE="SnapFire ${TAG}"
+            RELEASE_ARGS=(--latest)
+          fi
+
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" release/*.zip release/SHA256SUMS.txt --clobber
             gh release edit "$TAG" \
-              --title "SnapFire ${TAG} 测试版" \
-              --prerelease
+              --title "$RELEASE_TITLE" \
+              "${RELEASE_ARGS[@]}"
             if [ -f "$NOTES" ]; then
               gh release edit "$TAG" --notes-file "$NOTES"
             fi
           else
             gh release create "$TAG" release/*.zip release/SHA256SUMS.txt \
-              --title "SnapFire ${TAG} 测试版" \
-              --prerelease \
+              --title "$RELEASE_TITLE" \
+              "${RELEASE_ARGS[@]}" \
               "${NOTES_ARGS[@]}"
           fi
