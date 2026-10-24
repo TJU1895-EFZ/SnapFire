@@ -1,6 +1,6 @@
 {
   "name": "snapfire",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "SnapFire - offline mixed-reality real-person gunfight for Windows laptops",
   "main": "./out/main/index.js",
   "author": "SnapFire",
