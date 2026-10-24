@@ -16,7 +16,17 @@ relicense them.
 | React DOM | 19.3.1 | MIT | |
 | Three.js | 0.186.1 | MIT | |
 | `ws` | 8.22.0 | MIT | |
+| `node-forge` | 1.4.0 | BSD-3-Clause OR GPL-2.0 | Used only to generate the local CA / HTTPS certificate for the optional phone server. |
+| `qrcode` | 1.5.4 | MIT | Generates the phone install-page QR code in the lobby. |
 | Electron | 44.9.0 | MIT | The Electron distribution contains Chromium and other third-party components; see the `LICENSES.chromium.html` and license files shipped with Electron. |
+
+## Bundled mobile client (optional)
+
+The desktop app can serve the separately built **SnapFire-Mobile** PWA from
+`resources/mobile-dist`. Its own runtime dependencies are React, React DOM,
+Three.js and `@vladmandic/human` (all MIT); see
+`SnapFire-Mobile/THIRD_PARTY_NOTICES.md` in the mobile repository for the full
+list and model licenses.
 
 ## Bundled AI models
 
@@ -57,6 +67,8 @@ project license.
   - `react-dom-LICENSE.txt`
   - `three-LICENSE.txt`
   - `ws-LICENSE.txt`
+  - `node-forge-LICENSE.txt`
+  - `qrcode-LICENSE.txt`
   - `electron-LICENSE.txt`
 - Human license copy inside the model directory:
   `src/renderer/public/models/LICENSE-human.txt`

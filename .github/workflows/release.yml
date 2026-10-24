@@ -34,6 +34,35 @@ jobs:
       - name: Build renderer/main/preload
         run: npm run build
 
+      # The phone client lives in a separate repository.  If it is accessible,
+      # include it in the package; otherwise the desktop release is built
+      # without it (the lobby simply reports that the phone server is off).
+      - name: Checkout mobile client (optional)
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/SnapFire-Mobile
+          path: mobile-client
+
+      - name: Build mobile client (optional)
+        continue-on-error: true
+        shell: bash
+        run: |
+          if [ -f mobile-client/package.json ]; then
+            cd mobile-client
+            npm ci
+            npm run build
+          fi
+
+      - name: Prepare mobile client (optional)
+        shell: bash
+        run: |
+          if [ -f mobile-client/dist/index.html ]; then
+            SNAPFIRE_MOBILE_DIST="$PWD/mobile-client/dist" node scripts/prepare-mobile-dist.mjs
+          else
+            node scripts/prepare-mobile-dist.mjs --optional
+          fi
+
       - name: Build portable zip
         run: npx electron-builder --win --x64 --publish never
 

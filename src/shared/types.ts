@@ -237,6 +237,17 @@ export interface HostInfo {
   roomCode: string
   lanIps: string[]
   hostToken: string
+  /** HTTPS address served to phone clients (when the mobile server is up). */
+  mobileUrl?: string | null
+  mobilePort?: number | null
+  /** Plain-HTTP page: download the CA, then open the phone client. */
+  mobileInstallUrl?: string | null
+  /** Data URL for a QR code pointing at mobileInstallUrl. */
+  mobileQr?: string | null
+  /** Path to the CA certificate phones must trust once. */
+  mobileCertPath?: string | null
+  /** Why the mobile server could not start, if applicable. */
+  mobileError?: string | null
 }
 
 export interface AppInfo {
@@ -267,6 +278,7 @@ export interface SnapFireApi {
     start: () => Promise<HostInfo>
     stop: () => Promise<void>
     status: () => Promise<HostInfo | null>
+    openCertFolder: () => Promise<void>
   }
   app: {
     info: () => Promise<AppInfo>

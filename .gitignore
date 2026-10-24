@@ -3,6 +3,7 @@ out/
 dist/
 release/
 artifacts/
+resources/mobile-dist/
 coverage/
 test-results/
 playwright-report/

@@ -1,14 +1,17 @@
 import { app, BrowserWindow, dialog, ipcMain, protocol, session, shell } from 'electron'
 import { existsSync, promises as fs } from 'node:fs'
-import { extname, join, normalize, sep } from 'node:path'
+import { extname, join, normalize, resolve, sep } from 'node:path'
 import { Storage } from './storage'
 import { LanServer } from './lanServer'
+import { MobileServer } from './mobileServer'
 import { FieldLog } from './fieldLog'
+import QRCode from 'qrcode'
 import type {
   AppSettings,
   AppearanceData,
   BackupPayload,
   BackupResult,
+  HostInfo,
   MatchResult,
   ProfileData
 } from '../shared/types'
@@ -60,7 +63,34 @@ const MIME_TYPES: Record<string, string> = {
 let mainWindow: BrowserWindow | null = null
 let storage: Storage
 let lanServer: LanServer
+let mobileServer: MobileServer
 let fieldLog: FieldLog
+
+/**
+ * Locate the built mobile client.
+ *
+ * - `SNAPFIRE_MOBILE_DIST` overrides everything (development / custom setups).
+ * - Packaged builds get `resources/mobile-dist` via electron-builder.
+ * - Development builds normally find the sibling SnapFire-Mobile checkout.
+ */
+function resolveMobileDist(): string | null {
+  const candidates = [
+    process.env['SNAPFIRE_MOBILE_DIST'],
+    join(process.resourcesPath, 'mobile-dist'),
+    join(app.getPath('userData'), 'mobile-dist'),
+    join(app.getAppPath(), '..', 'SnapFire-Mobile', 'dist'),
+    join(process.cwd(), '..', 'SnapFire-Mobile', 'dist')
+  ].filter((value): value is string => Boolean(value))
+
+  for (const candidate of candidates) {
+    try {
+      if (existsSync(join(candidate, 'index.html'))) return resolve(candidate)
+    } catch {
+      // ignore and try the next candidate
+    }
+  }
+  return null
+}
 
 function createWindow(): void {
   const iconPath = [
@@ -217,9 +247,80 @@ function registerIpc(): void {
     }
   })
 
-  ipcMain.handle('host:start', () => lanServer.start())
-  ipcMain.handle('host:stop', () => lanServer.stop())
-  ipcMain.handle('host:status', () => lanServer.getInfo())
+  ipcMain.handle('host:start', async (): Promise<HostInfo> => {
+    const info = await lanServer.start()
+    const distDir = resolveMobileDist()
+    if (!distDir) {
+      return {
+        ...info,
+        mobileUrl: null,
+        mobilePort: null,
+        mobileCertPath: null,
+        mobileError:
+          '未找到手机客户端构建（SnapFire-Mobile/dist）。' +
+          '请先在手机仓库运行 npm run build，或设置 SNAPFIRE_MOBILE_DIST。'
+      }
+    }
+
+    try {
+      const mobile = await mobileServer.start(info.port, {
+        distDir,
+        certDir: join(app.getPath('userData'), 'mobile-certs'),
+        roomCode: info.roomCode
+      })
+
+      let mobileQr: string | null = null
+      if (mobile.installUrl) {
+        try {
+          mobileQr = await QRCode.toDataURL(mobile.installUrl, {
+            width: 240,
+            margin: 1,
+            errorCorrectionLevel: 'M',
+            color: { dark: '#07090a', light: '#ffffff' }
+          })
+        } catch (error) {
+          console.warn('[mobile] QR generation failed', error)
+        }
+      }
+
+      return {
+        ...info,
+        mobileUrl: mobile.url,
+        mobilePort: mobile.port,
+        mobileInstallUrl: mobile.installUrl,
+        mobileCertPath: mobile.certPath,
+        mobileQr,
+        mobileError: null
+      }
+    } catch (error) {
+      console.error('[mobile] failed to start', error)
+      return {
+        ...info,
+        mobileUrl: null,
+        mobilePort: null,
+        mobileInstallUrl: null,
+        mobileCertPath: mobileServer.getCertPath(),
+        mobileQr: null,
+        mobileError: error instanceof Error ? error.message : String(error)
+      }
+    }
+  })
+
+  ipcMain.handle('host:stop', async () => {
+    await mobileServer.stop()
+    await lanServer.stop()
+  })
+
+  ipcMain.handle('host:status', () => {
+    const info = lanServer.getInfo()
+    if (!info) return null
+    return { ...info, ...mobileServer.getInfo() }
+  })
+
+  ipcMain.handle('host:open-cert-folder', () => {
+    const certPath = mobileServer.getCertPath()
+    if (certPath) shell.showItemInFolder(certPath)
+  })
 
   ipcMain.handle('app:info', () => ({
     version: app.getVersion(),
@@ -249,6 +350,7 @@ app.whenReady().then(async () => {
   await storage.writeAutoBackup()
   fieldLog = new FieldLog()
   lanServer = new LanServer()
+  mobileServer = new MobileServer()
   if (process.env['SNAPFIRE_TEST'] === '1') {
     ;(globalThis as unknown as { __snapfireTest?: { endMatch: () => void } }).__snapfireTest = {
       endMatch: () => lanServer.endMatchForTest()
@@ -278,6 +380,9 @@ app.on('window-all-closed', () => {
 })
 
 app.on('before-quit', () => {
+  if (mobileServer) {
+    void mobileServer.stop()
+  }
   if (lanServer) {
     void lanServer.stop()
   }

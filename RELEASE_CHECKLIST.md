@@ -46,6 +46,21 @@ npm run test:smoke
 npm run dist:win
 ```
 
+可选：本次发布包含手机客户端时，先构建并验证内嵌手机服务：
+
+```powershell
+cd ..\SnapFire-Mobile
+npm ci
+npm run build
+cd ..\SnapFire-MR实景枪战
+npm run prepare:mobile
+npm run smoke:mobile
+```
+
+`dist:win` 会自动尝试复制同级的 `SnapFire-Mobile/dist`；如果不存在，则打出一个
+仅桌面版的包（大厅会提示手机服务未启动）。需要强制包含手机端时，先运行
+`npm run prepare:mobile`（缺少构建会直接失败）。
+
 国内网络可用镜像：
 
 ```powershell

@@ -227,7 +227,19 @@ export function LobbyScreen({
 
   const address = session.address || '—'
   const roomCode = room.roomCode
-  const shareText = `SnapFire 房间号：${roomCode}\n房主地址：${address}`
+  const mobileUrl = session.hostInfo?.mobileUrl ?? null
+  const mobileInstallUrl = session.hostInfo?.mobileInstallUrl ?? null
+  const mobileQr = session.hostInfo?.mobileQr ?? null
+  const mobileCertPath = session.hostInfo?.mobileCertPath ?? null
+  const mobileError = session.hostInfo?.mobileError ?? null
+  const shareText = [
+    `SnapFire 房间号：${roomCode}`,
+    `桌面地址：${address}`,
+    mobileInstallUrl ? `手机安装页：${mobileInstallUrl}` : null,
+    mobileUrl ? `手机客户端：${mobileUrl}` : null
+  ]
+    .filter(Boolean)
+    .join('\n')
 
   const joinTeam = (team: Team): void => {
     onSetTeam(team)
@@ -277,6 +289,84 @@ export function LobbyScreen({
 
       <main className="lobby-main">
         <div className="lobby-board">
+        {session.isHost && (
+          <section className="mobile-join-card">
+            <div className="mobile-join-card__icon" aria-hidden="true">
+              <IconWifi />
+            </div>
+            <div className="mobile-join-card__body">
+              <div className="mobile-join-card__eyebrow">MOBILE BROWSER CLIENT</div>
+              <div className="mobile-join-card__title">手机加入</div>
+              {mobileUrl ? (
+                <>
+                  <div className="mobile-join-card__url">
+                    <span className="mobile-join-card__url-label">客户端</span>
+                    <code>{mobileUrl}</code>
+                    <button
+                      className="icon-button icon-button--small"
+                      onClick={() => void copy(mobileUrl, '手机地址已复制')}
+                      aria-label="复制手机客户端地址"
+                    >
+                      <IconCopy />
+                    </button>
+                  </div>
+                  {mobileInstallUrl && (
+                    <div className="mobile-join-card__url">
+                      <span className="mobile-join-card__url-label">安装页</span>
+                      <code className="mobile-join-card__install-url">
+                        {mobileInstallUrl}
+                      </code>
+                      <button
+                        className="icon-button icon-button--small"
+                        onClick={() => void copy(mobileInstallUrl, '手机安装页地址已复制')}
+                        aria-label="复制手机安装页地址"
+                      >
+                        <IconCopy />
+                      </button>
+                    </div>
+                  )}
+                  <p className="mobile-join-card__hint">
+                    {mobileInstallUrl ? (
+                      <>
+                        手机扫码打开安装页：先下载并安装 CA 证书，再点“打开手机客户端”。
+                        房间号 <strong>{roomCode}</strong>。
+                      </>
+                    ) : (
+                      <>
+                        手机浏览器打开此地址，输入房间号 <strong>{roomCode}</strong>。
+                        首次使用需在手机上安装 CA 证书。
+                      </>
+                    )}
+                  </p>
+                  <div className="mobile-join-card__actions">
+                    <button
+                      className="ghost-button"
+                      onClick={() => void window.snapfire.host.openCertFolder()}
+                    >
+                      打开证书目录
+                    </button>
+                    {mobileCertPath && (
+                      <code className="mobile-join-card__cert" title={mobileCertPath}>
+                        {mobileCertPath}
+                      </code>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <p className="mobile-join-card__error">
+                  {mobileError ?? '手机服务未启动'}
+                </p>
+              )}
+            </div>
+            {mobileQr && (
+              <div className="mobile-join-card__qr">
+                <img src={mobileQr} alt="手机安装页二维码" />
+                <span>扫码安装证书 / 加入</span>
+              </div>
+            )}
+          </section>
+        )}
+
           <div className="lobby-board__meta">
             <span className="status-chip">
               <span className="status-dot" />

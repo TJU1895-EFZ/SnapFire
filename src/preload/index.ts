@@ -22,7 +22,8 @@ const api: SnapFireApi = {
   host: {
     start: () => ipcRenderer.invoke('host:start'),
     stop: () => ipcRenderer.invoke('host:stop'),
-    status: () => ipcRenderer.invoke('host:status')
+    status: () => ipcRenderer.invoke('host:status'),
+    openCertFolder: () => ipcRenderer.invoke('host:open-cert-folder')
   },
   app: {
     info: () => ipcRenderer.invoke('app:info')

@@ -697,3 +697,23 @@ A1 → A2 → A3 → A4 → A5 → A6
 ```
 
 **关键路径**：A → B → C → G4。C（战斗页 + 识别 + 命中）是风险最高、工作量最大的阶段，应优先保证闭环可用，再做视觉 polish。
+
+---
+
+## 10. 移动端伴生客户端（2026-10-24 补充）
+
+移动端已作为独立仓库 `SnapFire-Mobile` 实现，并通过内嵌主进程服务接入桌面房间。
+这一项不属于 v1.0.0 桌面核心的关键路径，但已纳入当前工作区：
+
+- `src/main/mobileServer.ts`：HTTPS 静态托管 + WSS → 现有 LanServer 的反向代理；
+- 自动生成本地 CA 和短期服务器证书，证书保存在
+  `%APPDATA%\SnapFire\mobile-certs`（私钥在 `private/`）；
+- `HostInfo` 增加 `mobileUrl` / `mobilePort` / `mobileInstallUrl` / `mobileQr` /
+  `mobileCertPath` / `mobileError`；
+- 大厅新增“手机加入”卡片，房主可复制地址、打开证书目录；
+- 大厅同时显示二维码和 HTTP 安装页（默认 8444）：手机扫码即可下载 CA、
+  查看 Android/iOS 安装步骤并打开手机客户端，不必再用数据线传证书；
+- `npm run prepare:mobile` 将 `../SnapFire-Mobile/dist` 复制到
+  `resources/mobile-dist`，随打包发布；`dist:win` 已自动调用；
+- 测试：`npm run smoke:mobile` 验证 HTTPS 页面、模型、Service Worker 头、
+  安装页、CA 下载、二维码，以及 WSS 客户端通过代理加入房间。

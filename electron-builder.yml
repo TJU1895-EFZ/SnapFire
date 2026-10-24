@@ -21,6 +21,11 @@ extraFiles:
   - from: third-party-licenses
     to: third-party-licenses
 
+extraResources:
+  # Built SnapFire-Mobile client, copied by `npm run prepare:mobile`.
+  - from: resources/mobile-dist
+    to: mobile-dist
+
 asar: true
 
 win:
