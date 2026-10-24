@@ -1,6 +1,6 @@
 # SnapFire 发布检查清单
 
-适用版本：`v0.1.1`（便携 zip）
+适用版本：`v1.0.0`（便携 zip）
 
 > **历史版本**
 >
@@ -11,19 +11,26 @@
 > - Workflow：[run 39267114421](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/39267114421) — success
 > - CI SHA256：`260d6d78012712ad5d1d9e06d09f1111f676bd6bac7e88dcece29d9271ce30ae`
 >
-> **v0.1.1 已于 2026-10-21 发布（Pre-release，0.x 测试版）**
+> v0.1.1 已于 2026-10-21 发布（Pre-release，0.x 测试版）：
 >
 > - Release：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v0.1.1
 > - Workflow：[run 39456848369](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/39456848369) — success
 > - CI SHA256：`05f2cd9b3bfd36359d208981a2aeea38347dbc67b1a461befc2d1951f36d99bc`
 > - 详细验证见 `TEST_REPORT.md` §3.7 / §3.8。
+>
+> **v1.0.0 已于 2026-10-24 发布（正式版本，latest）**
+>
+> - Release：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v1.0.0
+> - Workflow：[run 40074274452](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/40074274452) — success
+> - 真人实战 2 场通过（红线 0 错误归属）。
+> - 详细验证见 `TEST_REPORT.md` §4。
 
 ## 1. 发布前
 
-- [ ] 确认 `package.json` 与 `package-lock.json` 版本为 `0.1.1`
-- [ ] 确认 `release-notes/v0.1.1.md` 已提交
-- [ ] 确认 README 的当前版本、下载文件名和校验命令已更新
-- [x] 确认这是 **0.x 测试版**，README 与 Release 说明已写明真实双机/真人验收已完成（2026-10-24 LAN 房间实战）
+- [x] 确认 `package.json` 与 `package-lock.json` 版本为 `0.1.1`
+- [x] 确认 `release-notes/v1.0.0.md` 已提交
+- [x] 确认 README 的当前版本、下载文件名和校验命令已更新
+- [x] 确认这是 **v1.0.0 正式版本**，README 与 Release 说明已写明真实双机/真人验收已完成（2026-10-24 LAN 房间实战，红线 0 错误归属）
 - [ ] 确认 `%APPDATA%\SnapFire\data` 中没有需要清理的本机数据
 - [ ] 确认没有把 `artifacts/`、`node_modules/`、`out/`、`release/` 加入提交
 
@@ -81,10 +88,10 @@ Get-FileHash .\release\SnapFire-0.1.1-win-x64.zip -Algorithm SHA256
 ```powershell
 cd "D:\github\SnapFire-MR实景枪战"
 git add -A
-git commit -m "release: v0.1.1"
+git commit -m "release: v1.0.0"
 git push origin main
-git tag v0.1.1
-git push origin v0.1.1
+git tag v1.0.0
+git push origin v1.0.0
 ```
 
 推送 tag 后，`.github/workflows/release.yml` 会：
@@ -92,19 +99,19 @@ git push origin v0.1.1
 - 在 `windows-latest` 上安装依赖、类型检查、35 项测试、构建；
 - 用 electron-builder 生成 `SnapFire-0.1.1-win-x64.zip`；
 - 生成 `SHA256SUMS.txt`；
-- 创建 **v0.1.1 测试版** 的 GitHub Release，并标记为 **Pre-release**。
+- 创建 **v1.0.0** 的 GitHub Release，并标记为 **latest**（非 pre-release）。
 - 0.x 版本和带后缀的 tag（如 `v1.0.0-rc.1`、`v1.0.0-beta.1`）都创建预发布；`v1.0.0` 及以后才标记为 latest。
 
 ## 5. 发布后检查
 
-- [ ] Release 标题为 `SnapFire v0.1.1 测试版`
-- [ ] Release 标记为 Pre-release（0.x 策略，不标 Latest）
-- [ ] 资产包含 `SnapFire-0.1.1-win-x64.zip` + `SHA256SUMS.txt`
-- [ ] Release 正文与 `release-notes/v0.1.1.md` 一致
+- [x] Release 标题为 `SnapFire v1.0.0`
+- [x] Release 标记为 latest（非 pre-release）
+- [x] 资产包含 `SnapFire-0.1.1-win-x64.zip` + `SHA256SUMS.txt`
+- [x] Release 正文与 `release-notes/v1.0.0.md` 一致
 - [ ] 下载 zip 并校验 SHA256
 - [ ] 解压 Release zip，对 `SnapFire.exe` 运行完整双实例冒烟
 - [ ] 在一台**没有 Node.js** 的 Windows 10/11 电脑上启动，检查摄像头、模型加载、局域网加入、防火墙提示
-- [ ] 把 CI run、Release 链接、CI SHA256 记录到 `TEST_REPORT.md`
+- [x] 把 CI run、Release 链接、CI SHA256 记录到 `TEST_REPORT.md`
 
 ## 6. 已知风险
 
