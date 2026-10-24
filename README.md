@@ -66,14 +66,14 @@ SnapFire（SnapFire MR 实景枪战）是一款面向真实场地的**混合现�
 v1.0.0 以便携 zip 发布：
 
 1. 打开本项目的 **GitHub Releases** 页面：https://github.com/TJU1895-EFZ/SnapFire/releases
-2. 下载 `SnapFire-0.1.1-win-x64.zip` 和 `SHA256SUMS.txt`。
+2. 下载 `SnapFire-1.0.0-win-x64.zip` 和 `SHA256SUMS.txt`。
 3. 解压到任意可写目录（例如 `D:\Games\SnapFire`；不要解压到需要管理员权限的目录）。
 4. 双击 `SnapFire.exe`。
 
 可选校验（与 `SHA256SUMS.txt` 对照）：
 
 ```powershell
-Get-FileHash .\SnapFire-0.1.1-win-x64.zip -Algorithm SHA256
+Get-FileHash .\SnapFire-1.0.0-win-x64.zip -Algorithm SHA256
 ```
 
 特点：
@@ -253,7 +253,7 @@ npx electron .
 - `npm test`：6 个测试文件、35 项测试通过；
 - `npm run build` 通过；
 - `npm run test:smoke`：两个 Electron 实例，假摄像头，完整走通大厅 → 战斗 → 开火 → 结算 → 战绩保存 → 返回大厅；
-- 便携 zip 已构建并测试：`release/SnapFire-0.1.1-win-x64.zip`（约 158MB）；打包后的 `SnapFire.exe` 和解压 zip 均通过完整双实例冒烟（Human 模型从 asar 离线加载），并校验场地测试 JSONL 的 `session` / `shot` / `match-end`；
+- 便携 zip 已构建并测试：`release/SnapFire-1.0.0-win-x64.zip`（约 158MB）；打包后的 `SnapFire.exe` 和解压 zip 均通过完整双实例冒烟（Human 模型从 asar 离线加载），并校验场地测试 JSONL 的 `session` / `shot` / `match-end`；
 - **GitHub Release v1.0.0**：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v1.0.0；CI run 40074274452 通过；下载校验一致，解压后完整冒烟通过；
 - 真实双机/真人识别：2026-10-24 LAN 房间 2 场实战通过（红线 0 错误归属）；6 米/10 米测量场、6 人房间、连续 3 局稳定性测试未进行。
 
@@ -279,7 +279,7 @@ npm run dist:win
 
 产物：
 
-- `release/SnapFire-0.1.1-win-x64.zip`（约 158MB，解压后双击 `SnapFire.exe`）
+- `release/SnapFire-1.0.0-win-x64.zip`（约 158MB，解压后双击 `SnapFire.exe`）
 - `release/win-unpacked/`（本地测试用）
 - zip 内含 `README.md`、`LICENSE`、`THIRD_PARTY_NOTICES.md`、`third-party-licenses/` 和离线模型
 

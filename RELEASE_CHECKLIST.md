@@ -27,7 +27,7 @@
 
 ## 1. 发布前
 
-- [x] 确认 `package.json` 与 `package-lock.json` 版本为 `0.1.1`
+- [x] 确认 `package.json` 与 `package-lock.json` 版本为 `1.0.0`
 - [x] 确认 `release-notes/v1.0.0.md` 已提交
 - [x] 确认 README 的当前版本、下载文件名和校验命令已更新
 - [x] 确认这是 **v1.0.0 正式版本**，README 与 Release 说明已写明真实双机/真人验收已完成（2026-10-24 LAN 房间实战，红线 0 错误归属）
@@ -56,7 +56,7 @@ npm run dist:win
 
 预期产物：
 
-- `release/SnapFire-0.1.1-win-x64.zip`
+- `release/SnapFire-1.0.0-win-x64.zip`
 - `release/win-unpacked/SnapFire.exe`（用于测试）
 
 ## 3. 验证便携包
@@ -80,7 +80,7 @@ node scripts/smoke.mjs
 3. 生成并记录 SHA256：
 
 ```powershell
-Get-FileHash .\release\SnapFire-0.1.1-win-x64.zip -Algorithm SHA256
+Get-FileHash .\release\SnapFire-1.0.0-win-x64.zip -Algorithm SHA256
 ```
 
 ## 4. GitHub 上传与 Release
@@ -97,7 +97,7 @@ git push origin v1.0.0
 推送 tag 后，`.github/workflows/release.yml` 会：
 
 - 在 `windows-latest` 上安装依赖、类型检查、35 项测试、构建；
-- 用 electron-builder 生成 `SnapFire-0.1.1-win-x64.zip`；
+- 用 electron-builder 生成 `SnapFire-1.0.0-win-x64.zip`；
 - 生成 `SHA256SUMS.txt`；
 - 创建 **v1.0.0** 的 GitHub Release，并标记为 **latest**（非 pre-release）。
 - 0.x 版本和带后缀的 tag（如 `v1.0.0-rc.1`、`v1.0.0-beta.1`）都创建预发布；`v1.0.0` 及以后才标记为 latest。
@@ -106,7 +106,7 @@ git push origin v1.0.0
 
 - [x] Release 标题为 `SnapFire v1.0.0`
 - [x] Release 标记为 latest（非 pre-release）
-- [x] 资产包含 `SnapFire-0.1.1-win-x64.zip` + `SHA256SUMS.txt`
+- [x] 资产包含 `SnapFire-1.0.0-win-x64.zip` + `SHA256SUMS.txt`
 - [x] Release 正文与 `release-notes/v1.0.0.md` 一致
 - [ ] 下载 zip 并校验 SHA256
 - [ ] 解压 Release zip，对 `SnapFire.exe` 运行完整双实例冒烟
