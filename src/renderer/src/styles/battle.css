@@ -927,7 +927,7 @@
   position: absolute;
   left: 20px;
   top: 340px;
-  z-index: 12;
+  z-index: 15;
   width: 320px;
   padding: 9px 10px;
   border: 1px solid rgba(255, 155, 69, 0.38);
@@ -936,6 +936,8 @@
   font-size: 9px;
   line-height: 1.35;
   color: var(--text-dim);
+  pointer-events: auto;
+  user-select: none;
 }
 
 .field-test-panel__head {

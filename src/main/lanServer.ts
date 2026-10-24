@@ -170,6 +170,7 @@ export class LanServer {
   private result: MatchResult | null = null
   private tickTimer: NodeJS.Timeout | null = null
   private lastRoomBroadcast = 0
+  private slowClients = new Map<WebSocket, { count: number; lastCheck: number }>()
 
   isRunning(): boolean {
     return this.wss !== null
@@ -223,6 +224,7 @@ export class LanServer {
   }
 
   async stop(): Promise<void> {
+    this.slowClients.clear()
     if (this.tickTimer) {
       clearInterval(this.tickTimer)
       this.tickTimer = null
@@ -583,7 +585,9 @@ export class LanServer {
     }
     const now = Date.now()
     if (now - shooter.lastShotAt < FIRE_COOLDOWN_MS) {
-      // Duplicate key presses or an over-eager client. Ignore silently.
+      // Duplicate key presses or an over-eager client. Reply so the
+      // client does not wait for a 5-second timeout.
+      this.send(socket, { type: 'shot-result', hit: false, reason: 'cooldown' })
       return
     }
     shooter.lastShotAt = now
@@ -701,6 +705,7 @@ export class LanServer {
   }
 
   private handleClose(socket: WebSocket): void {
+    this.slowClients.delete(socket)
     const player = this.findBySocket(socket)
     if (!player) return
     player.connected = false
@@ -873,6 +878,12 @@ export class LanServer {
   }
 
   private broadcastRoom(): void {
+    // During active play, `tick()` broadcasts every 500 ms, so per-shot
+    // `broadcastRoom()` calls would be redundant.  Skip them to avoid
+    // unnecessary JSON serialization and WebSocket sends.
+    // During lobby / countdown, always broadcast immediately so state
+    // changes (team, ready, appearance) are visible without delay.
+    if (this.phase === 'playing' && Date.now() - this.lastRoomBroadcast < 500) return
     this.lastRoomBroadcast = Date.now()
     this.broadcast({ type: 'room', room: this.roomState() })
   }
@@ -885,12 +896,45 @@ export class LanServer {
     if (!this.wss) return
     const payload = JSON.stringify(message)
     for (const client of this.wss.clients) {
-      if (client.readyState === WebSocket.OPEN) {
-        try {
-          client.send(payload)
-        } catch {
-          // ignore individual send failures
-        }
+      if (client.readyState !== WebSocket.OPEN) continue
+      // If a client's send buffer is backing up, skip broadcasting this
+      // message to it rather than blocking the entire event loop.
+      if (client.bufferedAmount > 512 * 1024) {
+        // Buffer > 512 KB: client is too slow. Skip this message and
+        // schedule a disconnect after repeated skips.
+        this.handleSlowClient(client)
+        continue
+      }
+      try {
+        client.send(payload)
+      } catch {
+        // ignore individual send failures
+      }
+    }
+  }
+
+  /**
+   * Track clients whose send buffers are backing up. After 3 consecutive
+   * skips (≈1.5 s at 500 ms tick rate), close the connection so the
+   * client stops accumulating data and the server can move on.
+   */
+  private handleSlowClient(socket: WebSocket): void {
+    const now = Date.now()
+    const entry = this.slowClients.get(socket)
+    if (!entry || now - entry.lastCheck > 1000) {
+      // Reset counter if more than 1 s has passed since last check.
+      this.slowClients.set(socket, { count: 1, lastCheck: now })
+      return
+    }
+    entry.count += 1
+    entry.lastCheck = now
+    if (entry.count >= 3) {
+      console.warn('[lan] client buffer backlog too high, disconnecting')
+      this.slowClients.delete(socket)
+      try {
+        socket.close(1013, 'try again later')
+      } catch {
+        // ignore
       }
     }
   }

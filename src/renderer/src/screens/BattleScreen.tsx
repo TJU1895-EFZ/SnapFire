@@ -91,7 +91,8 @@ const REASON_TEXT: Record<string, string> = {
   invulnerable: '目标处于复活保护',
   'invalid-target': '目标无效',
   'not-playing': '比赛未开始',
-  dead: '你已阵亡'
+  dead: '你已阵亡',
+  cooldown: '射速限制中'
 }
 
 export function BattleScreen({
@@ -513,6 +514,7 @@ export function BattleScreen({
         }
         if (!stillPlaying) {
           finalizePendingShot('开火后比赛已结束')
+          resolvingRef.current = false
           return
         }
         const sent = live.net.send({
