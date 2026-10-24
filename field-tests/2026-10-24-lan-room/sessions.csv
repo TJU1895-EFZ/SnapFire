@@ -1,0 +1,4 @@
+session_id,date,start_time,end_time,app_version,commit,artifact_sha256,venue,room,lighting,network,detection_quality,player_count,shooters,notes
+FT-20261024-092934-6166-LMU3,2026-10-24,09:29:34,09:34:06,0.1.1,029fa22,LAN-room,6166,normal,Wi-Fi,balanced,4,Jason/王小枫/雷霆无敌/阿北,热身局（Room 6166）
+FT-20261024-093409-6098-49MY,2026-10-24,09:34:09,09:38:09,0.1.1,029fa22,LAN-room,6098,normal,Wi-Fi,balanced,4,Jason/王小枫/雷霆无敌/阿北,第一场正式（Room 6098），4v4
+FT-20261024-094458-6098-KHBG,2026-10-24,09:44:58,09:49:58,0.1.1,029fa22,LAN-room,6098,normal,Wi-Fi,balanced,5,Jason/王小枫/雷霆无敌/阿北/RAINBOW DASH,第二场正式（Room 6098），5v4

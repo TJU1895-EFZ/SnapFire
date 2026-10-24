@@ -1,0 +1,3 @@
+match_id,session_id,start_time,end_time,end_reason,score_a,score_b,host_reported_score,client_reported_score,sync_ok,crashed,memory_start_mb,memory_end_mb,notes
+5f9cf5b8,FT-20261024-093409-6098-49MY,09:34:16,09:38:09,kill_limit,10,4,10:4,10:4,yes,no,,,第一场正式,Jason红队4杀3死,雷霆无敌蓝队7杀4死,阿北蓝队3杀0死,王小枫红队0杀7死
+bb414b6b,FT-20261024-094455-6098-5NEK,09:45:03,09:49:58,kill_limit,9,5,9:5,9:5,yes,no,,,第二场正式,阿北蓝队6杀0死,Jason红队4杀1死,雷霆无敌蓝队3杀5死,王小枫红队0杀4死,RAINBOW DASH红队1杀4死

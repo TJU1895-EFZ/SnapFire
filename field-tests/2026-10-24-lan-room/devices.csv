@@ -1,0 +1,6 @@
+device_id,role,model,cpu,gpu,ram_gb,os,camera_res,camera_name,power_mode,notes
+D1,host,,,win32,Windows 11 Home China,1920x1080,,平衡,Jason（第一场房主，第二场非房主）
+D2,client,,,win32,Windows 11 Home China,1280x720,,平衡,王小枫（检测延迟最高 3082ms）
+D3,client,,,win32,Windows 11 Home China,1280x960,,平衡,阿北（检测延迟最低 240ms）
+D4,client,,,win32,Windows 11 Home China,1920x1080,,平衡,雷霆无敌...刘简尘（16 次服务端超时）
+D5,client,,,win32,Windows 11 Home China,1280x720,,平衡,RAINBOW DASH（仅第二场，81 枪）
