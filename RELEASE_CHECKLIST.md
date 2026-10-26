@@ -20,7 +20,7 @@
 > - CI SHA256：`05f2cd9b3bfd36359d208981a2aeea38347dbc67b1a461befc2d1951f36d99bc`
 > - 详细验证见 `TEST_REPORT.md` §3.7 / §3.8。
 >
-> **v1.2.0 已于 2026-10-26 发布（正式版本，latest）**
+> **v1.2.0 已于 2026-10-26 发布（预发布，pre-release；v1.0.0 保持 latest）**
 >
 > - Release：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v1.2.0
 > - Workflow：[run 40311419813](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/40311419813) — success
@@ -123,13 +123,13 @@ git push origin v1.2.0
 - 在 `windows-latest` 上安装依赖、类型检查、71 项测试、构建；
 - 用 electron-builder 生成 `SnapFire-1.2.0-win-x64.zip`；
 - 生成 `SHA256SUMS.txt`；
-- 创建 **v1.2.0** 的 GitHub Release，并标记为 **latest**（非 pre-release）。
-- 0.x 版本和带后缀的 tag（如 `v1.1.0-rc.1`、`v1.2.0-beta.1`）都创建预发布；`v1.0.0` 及以后才标记为 latest。
+- 创建 **v1.2.0** 的 GitHub Release。本次为预发布，已用 `gh release edit v1.2.0 --prerelease --title "SnapFire v1.2.0 预发布"` 手动覆盖工作流的 latest 标记；v1.0.0 保持 latest。
+- 0.x 版本和带后缀的 tag（如 `v1.1.0-rc.1`、`v1.2.0-beta.1`）会自动创建预发布；`v1.0.0` 及以后的普通 tag 默认 latest。重跑本次 plain tag 工作流会再次标 latest，需要重新改为 pre-release。
 
 ## 5. 发布后检查
 
 - [x] Release 标题为 `SnapFire v1.2.0`
-- [x] Release 标记为 latest（非 pre-release）
+- [x] Release 标记为 pre-release（v1.0.0 保持 latest）
 - [x] 资产包含 `SnapFire-1.2.0-win-x64.zip` + `SHA256SUMS.txt`
 - [x] Release 正文与 `release-notes/v1.2.0.md` 一致
 - [x] 下载 zip 并校验 SHA256
