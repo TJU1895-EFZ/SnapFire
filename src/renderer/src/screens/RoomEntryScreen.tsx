@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ProfileData } from '@shared/types'
+import type { CombatMode, ProfileData } from '@shared/types'
 import {
   IconArrowLeft,
   IconCombat,
@@ -12,6 +12,7 @@ import { monogram, shortId } from '../utils/format'
 
 interface RoomEntryScreenProps {
   profile: ProfileData
+  mode: CombatMode
   busy: boolean
   error: string | null
   onBack: () => void
@@ -21,6 +22,7 @@ interface RoomEntryScreenProps {
 
 export function RoomEntryScreen({
   profile,
+  mode,
   busy,
   error,
   onBack,
@@ -53,8 +55,12 @@ export function RoomEntryScreen({
           <IconArrowLeft />
         </button>
         <div className="subpage-title">
-          <span className="eyebrow">TEAM DEATHMATCH / URBAN</span>
-          <h2>巷战 · 室内</h2>
+          <span className="eyebrow">
+            {mode === 'long-march'
+              ? 'TEAM DEATHMATCH / LONG MARCH'
+              : 'TEAM DEATHMATCH / URBAN'}
+          </span>
+          <h2>{mode === 'long-march' ? '长征 90 周年 · 常规' : '巷战 · 室内'}</h2>
         </div>
         <div className="subpage-header__right">
           <span className="status-chip">
@@ -70,15 +76,20 @@ export function RoomEntryScreen({
             <IconCombat />
           </div>
           <div>
-            <h3>3V3 室内团战</h3>
+            <h3>
+              {mode === 'long-march' ? '3V3 长征常规对抗' : '3V3 室内团战'}
+            </h3>
             <p>
-              每名玩家使用一台带摄像头的 Windows 笔记本。创建房间的人成为房主，
-              其他玩家在同一局域网内输入房主地址和 4 位房间号加入。
+              {mode === 'long-march'
+                ? '阵营为红军 / 国民党军。战斗画面会按阵营显示军服，换装只影响屏幕显示，不改变识别与命中判定。'
+                : '每名玩家使用一台带摄像头的 Windows 笔记本。创建房间的人成为房主，其他玩家在同一局域网内输入房主地址和 4 位房间号加入。'}
+              创建房间的人成为房主，其他玩家在同一局域网内输入房主地址和 4 位房间号加入。
             </p>
           </div>
           <div className="entry-facts">
             <span>
-              <IconUsers /> 最多 6 人 · 红蓝各 3 人
+              <IconUsers /> 最多 6 人 ·{' '}
+              {mode === 'long-march' ? '红军 / 国民党军各 3 人' : '红蓝各 3 人'}
             </span>
             <span>
               <IconWifi /> 同一 Wi-Fi / 热点

@@ -93,6 +93,70 @@ function expandPolygon(
   return polygon.map(([x, y]) => [cx + (x - cx) * factor, cy + (y - cy) * factor])
 }
 
+export interface TorsoCropRect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+interface KeypointPair {
+  left: [number, number]
+  right: [number, number]
+}
+
+/**
+ * Crop rectangle for the torso. Keypoints are normalized 0..1; when they are
+ * unavailable the body box supplies normalized fallbacks. Keeping both paths
+ * in one function avoids mixing pixel and normalized units.
+ */
+export function computeTorsoCropRect(
+  sourceWidth: number,
+  sourceHeight: number,
+  boxRaw: [number, number, number, number],
+  shoulders: KeypointPair | null,
+  hips: KeypointPair | null
+): TorsoCropRect | null {
+  if (sourceWidth <= 0 || sourceHeight <= 0) return null
+  const bodyX = boxRaw[0] * sourceWidth
+  const bodyW = boxRaw[2] * sourceWidth
+
+  const shoulderY = shoulders
+    ? Math.min(shoulders.left[1], shoulders.right[1])
+    : boxRaw[1] + boxRaw[3] * 0.18
+  const hipY = hips
+    ? Math.max(hips.left[1], hips.right[1])
+    : boxRaw[1] + boxRaw[3] * 0.62
+  const torsoHeight = Math.max(0.06, hipY - shoulderY)
+
+  let xMin = bodyX + bodyW * 0.12
+  let xMax = bodyX + bodyW * 0.88
+  if (shoulders) {
+    xMin = Math.min(shoulders.left[0], shoulders.right[0]) * sourceWidth
+    xMax = Math.max(shoulders.left[0], shoulders.right[0]) * sourceWidth
+  }
+  if (hips) {
+    xMin = Math.min(xMin, hips.left[0] * sourceWidth, hips.right[0] * sourceWidth)
+    xMax = Math.max(xMax, hips.left[0] * sourceWidth, hips.right[0] * sourceWidth)
+  }
+
+  const marginX = Math.max(6, (xMax - xMin) * 0.12)
+  const x = Math.max(0, Math.floor(xMin - marginX))
+  const y = Math.max(
+    0,
+    Math.floor(shoulderY * sourceHeight - torsoHeight * sourceHeight * 0.08)
+  )
+  const right = Math.min(sourceWidth, Math.ceil(xMax + marginX))
+  const bottom = Math.min(
+    sourceHeight,
+    Math.ceil(hipY * sourceHeight + torsoHeight * sourceHeight * 0.35)
+  )
+  const width = right - x
+  const height = bottom - y
+  if (width < 12 || height < 12) return null
+  return { x, y, width, height }
+}
+
 /**
  * Builds a lighting-tolerant appearance descriptor from the torso area.
  * Used as the primary identity signal at 10 m, where faces are too small.
@@ -111,44 +175,17 @@ export function extractClothingDescriptor(
   const leftHip = keypointRaw(body, 'leftHip')
   const rightHip = keypointRaw(body, 'rightHip')
 
-  const bodyBox = body.boxRaw
-  const bodyX = bodyBox[0] * sourceWidth
-  const bodyY = bodyBox[1] * sourceHeight
-  const bodyW = bodyBox[2] * sourceWidth
-  const bodyH = bodyBox[3] * sourceHeight
-
-  const shoulderY =
-    leftShoulder && rightShoulder
-      ? Math.min(leftShoulder[1], rightShoulder[1])
-      : bodyY + bodyH * 0.18
-  const hipY =
-    leftHip && rightHip
-      ? Math.max(leftHip[1], rightHip[1])
-      : bodyY + bodyH * 0.62
-  const torsoHeight = Math.max(0.06, hipY - shoulderY)
-
-  let xMin = bodyX + bodyW * 0.12
-  let xMax = bodyX + bodyW * 0.88
-  if (leftShoulder && rightShoulder) {
-    xMin = Math.min(leftShoulder[0], rightShoulder[0]) * sourceWidth
-    xMax = Math.max(leftShoulder[0], rightShoulder[0]) * sourceWidth
-  }
-  if (leftHip && rightHip) {
-    xMin = Math.min(xMin, leftHip[0] * sourceWidth, rightHip[0] * sourceWidth)
-    xMax = Math.max(xMax, leftHip[0] * sourceWidth, rightHip[0] * sourceWidth)
-  }
-
-  const marginX = Math.max(6, (xMax - xMin) * 0.12)
-  const cropX = Math.max(0, Math.floor(xMin - marginX))
-  const cropY = Math.max(0, Math.floor(shoulderY * sourceHeight - torsoHeight * sourceHeight * 0.08))
-  const cropRight = Math.min(sourceWidth, Math.ceil(xMax + marginX))
-  const cropBottom = Math.min(
+  const crop = computeTorsoCropRect(
+    sourceWidth,
     sourceHeight,
-    Math.ceil(hipY * sourceHeight + torsoHeight * sourceHeight * 0.35)
+    body.boxRaw,
+    leftShoulder && rightShoulder
+      ? { left: leftShoulder, right: rightShoulder }
+      : null,
+    leftHip && rightHip ? { left: leftHip, right: rightHip } : null
   )
-  const cropW = cropRight - cropX
-  const cropH = cropBottom - cropY
-  if (cropW < 12 || cropH < 12) return null
+  if (!crop) return null
+  const { x: cropX, y: cropY, width: cropW, height: cropH } = crop
 
   const canvas = document.createElement('canvas')
   canvas.width = OUTPUT_SIZE
@@ -262,6 +299,24 @@ export function extractClothingDescriptor(
     aspect: Number((cropW / cropH).toFixed(4)),
     capturedAt: Date.now()
   }
+}
+
+/**
+ * Torso descriptor from a detector box rather than pose keypoints.
+ *
+ * The uniform overlay only needs a rough torso crop for each person detected
+ * by CenterNet; this helper keeps that approximation out of the shot-judging
+ * path.
+ */
+export function extractClothingDescriptorFromBox(
+  source: CanvasImageSource,
+  sourceWidth: number,
+  sourceHeight: number,
+  boxRaw: [number, number, number, number],
+  view: EnrollmentView
+): ClothingDescriptor | null {
+  const body = { boxRaw, keypoints: [] } as unknown as BodyResult
+  return extractClothingDescriptor(source, sourceWidth, sourceHeight, body, view)
 }
 
 export function histogramIntersection(a: number[], b: number[]): number {

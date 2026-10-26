@@ -124,7 +124,13 @@ try {
   await host.page.waitForTimeout(900)
   await host.page.screenshot({ path: join(artifactsDir, '01-home.png') })
 
-  await host.page.click('.mode-card--active')
+  await host.page.click('.home-mode-card--regular')
+  await host.page.waitForSelector('.menu-screen--combat', { timeout: 10000 })
+  await host.page.screenshot({ path: join(artifactsDir, '01a-combat-menu.png') })
+  await host.page.click('.mode-tile--team')
+  await host.page.waitForSelector('.menu-screen--team', { timeout: 10000 })
+  await host.page.screenshot({ path: join(artifactsDir, '01b-team-menu.png') })
+  await host.page.click('.mode-tile--urban')
   await host.page.waitForSelector('.entry-screen', { timeout: 10000 })
   await host.page.screenshot({ path: join(artifactsDir, '02-room-entry.png') })
 
@@ -147,7 +153,11 @@ try {
   watchPage(client.page, 'client')
 
   await client.page.waitForSelector('.home-screen', { timeout: 30000 })
-  await client.page.click('.mode-card--active')
+  await client.page.click('.home-mode-card--regular')
+  await client.page.waitForSelector('.menu-screen--combat', { timeout: 10000 })
+  await client.page.click('.mode-tile--team')
+  await client.page.waitForSelector('.menu-screen--team', { timeout: 10000 })
+  await client.page.click('.mode-tile--urban')
   await client.page.waitForSelector('.entry-screen', { timeout: 10000 })
   await client.page.locator('.join-form input').nth(0).fill(joinAddress)
   await client.page.locator('.join-form input').nth(1).fill(roomCode)

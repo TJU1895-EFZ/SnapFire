@@ -4,6 +4,7 @@ import type {
   AppSettings,
   AppearanceData,
   ClientMessage,
+  CombatMode,
   HistoryData,
   HostInfo,
   ProfileData,
@@ -12,6 +13,11 @@ import type {
   Team
 } from '@shared/types'
 import { HomeScreen } from './screens/HomeScreen'
+import { CombatMenuScreen } from './screens/CombatMenuScreen'
+import { TeamModeScreen } from './screens/TeamModeScreen'
+import { LongMarchIntroScreen } from './screens/LongMarchIntroScreen'
+import { LongMarchMenuScreen } from './screens/LongMarchMenuScreen'
+import { LongMarchBattlesScreen } from './screens/LongMarchBattlesScreen'
 import { RoomEntryScreen } from './screens/RoomEntryScreen'
 import { LobbyScreen } from './screens/LobbyScreen'
 import { EnrollmentModal } from './screens/EnrollmentModal'
@@ -26,7 +32,17 @@ import { logFieldMatchEnd } from './fieldLog'
 import type { RoomSession, ToastTone } from './types'
 import { SnapFireMark, IconAlert, IconRefresh } from './components/Icons'
 
-type Screen = 'home' | 'entry' | 'lobby' | 'battle' | 'results'
+type Screen =
+  | 'home'
+  | 'combat-menu'
+  | 'team-menu'
+  | 'long-march-intro'
+  | 'long-march-menu'
+  | 'long-march-battles'
+  | 'entry'
+  | 'lobby'
+  | 'battle'
+  | 'results'
 
 interface ToastState {
   id: number
@@ -43,6 +59,7 @@ export function App(): React.JSX.Element {
   const [history, setHistory] = useState<HistoryData>({ matches: [] })
   const [appInfo, setAppInfo] = useState<AppInfo | null>(null)
   const [screen, setScreen] = useState<Screen>('home')
+  const [combatMode, setCombatMode] = useState<CombatMode>('urban')
   const [session, setSession] = useState<RoomSession | null>(null)
   const [busy, setBusy] = useState(false)
   const [entryError, setEntryError] = useState<string | null>(null)
@@ -58,6 +75,7 @@ export function App(): React.JSX.Element {
   const profileRef = useRef<ProfileData | null>(null)
   const appearanceRef = useRef<AppearanceData | null>(null)
   const settingsRef = useRef<AppSettings | null>(null)
+  const combatModeRef = useRef<CombatMode>('urban')
   const pendingConnectRef = useRef<{ hostInfo: HostInfo | null; address: string } | null>(null)
   const leavingRef = useRef(false)
   const hostStartedRef = useRef(false)
@@ -77,6 +95,9 @@ export function App(): React.JSX.Element {
   useEffect(() => {
     settingsRef.current = settings
   }, [settings])
+  useEffect(() => {
+    combatModeRef.current = combatMode
+  }, [combatMode])
 
   const showToast = useCallback((message: string, tone: ToastTone = 'info') => {
     toastIdRef.current += 1
@@ -174,7 +195,8 @@ export function App(): React.JSX.Element {
             selfId: event.selfId,
             isHost: event.isHost,
             hostInfo: pending?.hostInfo ?? null,
-            address: pending?.address ?? ''
+            address: pending?.address ?? '',
+            mode: combatModeRef.current
           }
           setSession(next)
           sessionRef.current = next
@@ -360,11 +382,12 @@ export function App(): React.JSX.Element {
   const leaveRoom = useCallback(async () => {
     leavingRef.current = true
     const current = sessionRef.current
+    const mode = current?.mode ?? combatModeRef.current
     if (current) {
       current.net.send({ type: 'leave' })
     }
     await cleanupSession(true)
-    setScreen('home')
+    setScreen(mode === 'long-march' ? 'long-march-menu' : 'team-menu')
     setBusy(false)
     setEntryError(null)
     setSettingsOpen(false)
@@ -527,15 +550,68 @@ export function App(): React.JSX.Element {
   }
 
   let content: React.JSX.Element
-  if (screen === 'entry') {
+  if (screen === 'combat-menu') {
+    content = (
+      <CombatMenuScreen
+        onBack={() => setScreen('home')}
+        onTeam={() => setScreen('team-menu')}
+        onPlaceholder={(mode) =>
+          showToast(`${mode}模式暂未开放，敬请期待`, 'info')
+        }
+      />
+    )
+  } else if (screen === 'team-menu') {
+    content = (
+      <TeamModeScreen
+        onBack={() => setScreen('combat-menu')}
+        onUrban={() => {
+          setCombatMode('urban')
+          combatModeRef.current = 'urban'
+          setEntryError(null)
+          setScreen('entry')
+        }}
+        onField={() => showToast('野战模式暂未开放，敬请期待', 'info')}
+      />
+    )
+  } else if (screen === 'long-march-intro') {
+    content = (
+      <LongMarchIntroScreen
+        onBack={() => setScreen('home')}
+        onNext={() => setScreen('long-march-menu')}
+      />
+    )
+  } else if (screen === 'long-march-menu') {
+    content = (
+      <LongMarchMenuScreen
+        onBack={() => setScreen('home')}
+        onCombat={() => {
+          setCombatMode('long-march')
+          combatModeRef.current = 'long-march'
+          setEntryError(null)
+          setScreen('entry')
+        }}
+        onScenes={() => setScreen('long-march-battles')}
+      />
+    )
+  } else if (screen === 'long-march-battles') {
+    content = (
+      <LongMarchBattlesScreen
+        onBack={() => setScreen('long-march-menu')}
+        onSelect={(name) => showToast(`「${name}」场景正在开发中`, 'info')}
+      />
+    )
+  } else if (screen === 'entry') {
     content = (
       <RoomEntryScreen
         profile={profile}
+        mode={combatMode}
         busy={busy}
         error={entryError}
         onBack={() => {
           setEntryError(null)
-          setScreen('home')
+          setScreen(
+            combatMode === 'long-march' ? 'long-march-menu' : 'team-menu'
+          )
         }}
         onCreate={() => void createRoom()}
         onJoin={(address, roomCode) => void joinRoom(address, roomCode)}
@@ -585,10 +661,8 @@ export function App(): React.JSX.Element {
         onUpdateName={(name) => void updateName(name)}
         onOpenSettings={() => setSettingsOpen(true)}
         onOpenHistory={() => setHistoryOpen(true)}
-        onEnterCombat={() => {
-          setEntryError(null)
-          setScreen('entry')
-        }}
+        onRegularCombat={() => setScreen('combat-menu')}
+        onLongMarch={() => setScreen('long-march-intro')}
       />
     )
   }

@@ -1,0 +1,410 @@
+/* --------------------------------------------------------------------------
+   Mode menus + Long March campaign
+   -------------------------------------------------------------------------- */
+
+.menu-screen,
+.campaign-screen {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.menu-main,
+.campaign-main {
+  position: relative;
+  z-index: 1;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.menu-heading h1 {
+  margin: 4px 0 6px;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3.2vw, 44px);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.menu-heading p {
+  margin: 0;
+  max-width: 760px;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-dim);
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.mode-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  min-height: 104px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(150deg, rgba(255, 255, 255, 0.035), transparent 55%),
+    rgba(14, 19, 21, 0.9);
+  text-align: left;
+  clip-path: var(--clip);
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.mode-tile:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 164, 43, 0.55);
+  box-shadow: 0 14px 34px rgba(255, 128, 20, 0.12);
+}
+
+.mode-tile--planned {
+  border-style: dashed;
+  opacity: 0.7;
+}
+
+.mode-tile--planned:hover {
+  transform: none;
+  border-color: var(--line-strong);
+  box-shadow: none;
+}
+
+.mode-tile--red {
+  border-color: rgba(255, 77, 77, 0.3);
+  background:
+    linear-gradient(150deg, rgba(255, 77, 77, 0.1), transparent 55%),
+    rgba(16, 21, 24, 0.94);
+}
+
+.mode-tile--red:hover {
+  border-color: rgba(255, 77, 77, 0.65);
+  box-shadow: 0 14px 34px rgba(255, 77, 77, 0.14);
+}
+
+.mode-tile__tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 164, 43, 0.35);
+  background: var(--amber-dim);
+  color: var(--amber);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.mode-tile--red .mode-tile__tag {
+  border-color: rgba(255, 77, 77, 0.4);
+  background: var(--red-dim);
+  color: #ff8a8a;
+}
+
+.mode-tile__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.mode-tile__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mode-tile__head strong {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.mode-tile__subtitle {
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+
+.mode-tile__desc {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.mode-tile__badge {
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  font-family: var(--font-display);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.mode-tile__badge--ready {
+  border-color: rgba(99, 230, 168, 0.3);
+  color: var(--green);
+  background: var(--green-dim);
+}
+
+.mode-tile__badge--planned {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mode-tile__arrow {
+  flex: 0 0 auto;
+  color: var(--amber);
+}
+
+/* Home main entries ------------------------------------------------------- */
+
+.home-mode-card--campaign {
+  border-color: rgba(255, 77, 77, 0.34);
+  background:
+    linear-gradient(150deg, rgba(255, 77, 77, 0.12), transparent 55%),
+    rgba(16, 21, 24, 0.94);
+}
+
+.home-mode-card--campaign .mode-card__icon {
+  border-color: rgba(255, 77, 77, 0.4);
+  background: var(--red-dim);
+  color: #ff8a8a;
+}
+
+.mode-badge--campaign {
+  border-color: rgba(255, 77, 77, 0.4);
+  color: #ff9a9a;
+  background: var(--red-dim);
+}
+
+/* Long March campaign ----------------------------------------------------- */
+
+.campaign-main {
+  width: min(980px, 100%);
+  padding-bottom: 142px;
+}
+
+.campaign-hero {
+  padding: 24px 26px;
+  border: 1px solid rgba(255, 77, 77, 0.3);
+  background:
+    linear-gradient(135deg, rgba(190, 40, 40, 0.26), rgba(255, 164, 43, 0.08) 55%, rgba(255, 255, 255, 0.03));
+  clip-path: var(--clip);
+}
+
+.campaign-hero--compact {
+  padding: 20px 22px;
+}
+
+.campaign-hero__years {
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  color: #f0a0a0;
+}
+
+.campaign-hero h1 {
+  margin: 8px 0 6px;
+  font-family: var(--font-display);
+  font-size: clamp(30px, 3.4vw, 48px);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+}
+
+.campaign-hero--compact h1 {
+  font-size: clamp(24px, 2.6vw, 34px);
+}
+
+.campaign-hero p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.campaign-article {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.campaign-article__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.campaign-article__section h2 {
+  padding-left: 12px;
+  border-left: 3px solid var(--red);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  color: #f3d6a0;
+}
+
+.campaign-article__section p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.95;
+  color: #c9cfd3;
+  text-align: justify;
+}
+
+.campaign-gate {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  width: min(980px, calc(100vw - 48px));
+  z-index: 20;
+  padding: 12px 16px 14px;
+  border: 1px solid var(--line);
+  background: rgba(7, 9, 10, 0.95);
+  clip-path: var(--clip);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 -10px 34px rgba(0, 0, 0, 0.45);
+}
+
+.campaign-gate__track {
+  height: 4px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.09);
+  overflow: hidden;
+}
+
+.campaign-gate__track span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--red), var(--amber));
+  transition: width 0.2s linear;
+}
+
+.campaign-gate__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.campaign-gate__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.campaign-gate__copy strong {
+  font-size: 14px;
+}
+
+.campaign-gate__copy span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.campaign-gate__button {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 150px;
+}
+
+.campaign-battle-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.campaign-battle-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.025);
+  text-align: left;
+  clip-path: var(--clip);
+  transition: border-color 0.16s ease, background 0.16s ease;
+}
+
+.campaign-battle-card:hover {
+  border-color: rgba(255, 164, 43, 0.5);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.campaign-battle-card__index {
+  flex: 0 0 auto;
+  padding-top: 2px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+}
+
+.campaign-battle-card__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.campaign-battle-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.campaign-battle-card__head strong {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.campaign-battle-card__meta {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.campaign-battle-card__summary {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.status-chip--campaign {
+  color: #ff9a9a;
+  border-color: rgba(255, 77, 77, 0.35);
+  background: var(--red-dim);
+}
+
+@media (max-width: 980px) {
+  .menu-grid,
+  .campaign-battle-list {
+    grid-template-columns: 1fr;
+  }
+  .campaign-article__section p {
+    font-size: 14px;
+  }
+}

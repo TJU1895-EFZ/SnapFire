@@ -36,7 +36,18 @@ SnapFire（SnapFire MR 实景枪战）是一款面向真实场地的**混合现�
 - 命中扣血、误伤队友不扣血、阵亡/复活
 - 本地数据、自动备份、导出/导入
 
-### 2.2 当前已开发模式：团战 · 巷战（室内）
+### 2.2 当前已开发模式：常规作战 + 长征 90 周年纪念
+
+首页现在只有两个入口：
+
+- **常规作战**：单人、团战、夺旗、拆弹；团战下再分巷战、野战。当前只有
+  “团战 → 巷战”接入局域网房间，其余为占位。
+- **长征胜利 90 周年纪念**：导读（至少停留 10 秒）→ 常规 / 历史场景。
+  常规沿用巷战规则，阵营显示为红军 / 国民党军；战斗画面会用 CenterNet
+  检测屏幕内所有玩家，并按阵营叠加军服贴图。换装只影响屏幕显示，识别与
+  命中判定仍使用原始摄像头画面。历史场景为长征著名战役资料列表。
+
+巷战玩法：
 
 - 1V1 到 3V3；一房最多 6 人，红蓝各最多 3 人，玩家自选队伍
 - 交火距离设计目标最远 10 米
@@ -53,7 +64,9 @@ SnapFire（SnapFire MR 实景枪战）是一款面向真实场地的**混合现�
 
 ### 2.3 当前不做 / 未开放
 
-- 野战（室外）模式：首页保留入口，显示"敬请期待"
+- 单人 / 夺旗 / 拆弹：常规作战菜单保留入口，显示"待开发"
+- 野战（室外）模式：团战菜单保留入口，显示"待开发"
+- 历史场景的实际战斗：当前只做战役资料列表
 - 身体部位差异伤害
 - 弹匣/换弹/多把武器（当前一把枪、无限子弹 + 射速冷却）
 - 登录、云数据库、公网联机（手机端由独立的 SnapFire-Mobile 伴生客户端提供，见 3.3）
@@ -288,11 +301,11 @@ npm run build
 
 ## 6. 当前状态、限制与测试
 
-- **版本**：v1.0.0；代码功能完成，自动化测试通过；真实双机/真人现场验收已完成（2026-10-24 LAN 房间 2 场实战，红线 0 错误归属）。
+- **版本**：v1.1.0（当前源码）；v1.0.0 为上次便携版发布。真实双机/真人现场验收已完成（2026-10-24 LAN 房间 2 场实战，红线 0 错误归属）。
 - **识别距离**：设计目标最远 10 米；10 米处人脸通常不可用，主要靠衣着。逆光、暗光、相似服装会降低成功率。
 - **不误扣原则**：识别不确定时按未命中处理，不猜测目标。
 - **美术**：首页角色为原创 SVG；手臂/枪械为 Three.js 基础几何体占位模型，不是最终美术。
-- **玩法**：当前只有团战/巷战；野战、身体部位伤害、换弹、多武器、排行/商城/语音/观战等未开发。
+- **玩法**：可玩“常规作战 → 团战 → 巷战”和“长征 90 周年 → 常规”；单人/夺旗/拆弹/野战为占位，历史场景为资料列表。身体部位伤害、换弹、多武器、排行/商城/语音/观战等未开发。
 - **网络**：局域网；无登录、无云、无公网联机；无断线重连。
 - **数据**：本地 JSON，未加密；请勿在公用电脑保存敏感照片。
 - **分发**：v1.0.0 为便携 zip，无安装包/自动更新；未签名可能触发 SmartScreen。
@@ -301,9 +314,11 @@ npm run build
 测试状态：
 
 - `npm run typecheck` 通过；
-- `npm test`：6 个测试文件、35 项测试通过；
+- `npm test`：10 个测试文件、59 项测试通过（含长征内容、阵营文案、换装几何/遮挡裁剪/匹配）；
 - `npm run build` 通过；
-- `npm run test:smoke`：两个 Electron 实例，假摄像头，完整走通大厅 → 战斗 → 开火 → 结算 → 战绩保存 → 返回大厅；
+- `npm run test:smoke`：两个 Electron 实例，假摄像头，完整走通常规作战菜单 → 巷战大厅 → 战斗 → 开火 → 结算 → 战绩保存 → 返回大厅；
+- `npm run smoke:long-march`：两个 Electron 实例，验证长征导读 10 秒门禁、红军/国民党军大厅、开局和战斗换装画布；
+- `npm run smoke:mobile`：桌面内嵌手机服务的 HTTPS / WSS / 静态资源冒烟；
 - 便携 zip 已构建并测试：`release/SnapFire-1.0.0-win-x64.zip`（约 158MB）；打包后的 `SnapFire.exe` 和解压 zip 均通过完整双实例冒烟（Human 模型从 asar 离线加载），并校验场地测试 JSONL 的 `session` / `shot` / `match-end`；
 - **GitHub Release v1.0.0**：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v1.0.0；CI run 40074274452 通过；下载校验一致，解压后完整冒烟通过；
 - 真实双机/真人识别：2026-10-24 LAN 房间 2 场实战通过（红线 0 错误归属）；6 米/10 米测量场、6 人房间、连续 3 局稳定性测试未进行。
@@ -313,13 +328,15 @@ npm run build
 ## 7. 开发与测试
 
 ```powershell
-npm run dev          # 开发模式
-npm run typecheck    # 类型检查
-npm test             # 单元/集成测试
-npm run build        # 生产构建
-npm run test:smoke   # 双实例 UI 冒烟（假摄像头）
-npm run dist:win     # 生成便携 zip
-npx electron .       # 运行构建产物
+npm run dev               # 开发模式
+npm run typecheck         # 类型检查
+npm test                  # 单元/集成测试
+npm run build             # 生产构建
+npm run test:smoke        # 双实例常规作战 UI 冒烟（假摄像头）
+npm run smoke:long-march  # 双实例长征模式 UI 冒烟（导读/换装画布）
+npm run smoke:mobile      # 桌面内嵌手机服务冒烟
+npm run dist:win          # 生成便携 zip
+npx electron .            # 运行构建产物
 ```
 
 ### 发布便携 zip / GitHub Release
@@ -358,11 +375,15 @@ src/
 │  └─ lanServer.ts          房主端权威房间/比赛服务（ws）
 ├─ preload/index.ts         contextBridge API
 └─ renderer/
-   ├─ public/models/        Human 离线模型
+   ├─ public/models/        Human 离线模型（含 CenterNet 多人检测）
+   ├─ public/assets/uniforms/ 长征模式军服贴图
    └─ src/                  App、screens、vision、game、hooks、net、styles
+                            （含长征导读/历史场景、全屏换装检测与渲染）
 
 tests/                       Vitest 单元/集成测试
-scripts/smoke.mjs            Playwright Electron UI 冒烟
+scripts/smoke.mjs            Playwright Electron UI 冒烟（常规作战）
+scripts/smoke-long-march.mjs 长征模式 UI 冒烟（导读/大厅/换装画布）
+scripts/smoke-mobile.mjs     内嵌手机服务 HTTPS/WSS 冒烟
 scripts/make-icon.py         生成应用图标
 start-snapfire.cmd           双击启动已构建版本（源码模式）
 build/icon.ico               应用图标

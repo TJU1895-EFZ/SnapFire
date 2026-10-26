@@ -72,7 +72,11 @@ try {
   })
 
   await page.waitForSelector('.home-screen', { timeout: 30000 })
-  await page.click('.mode-card--active')
+  await page.click('.home-mode-card--regular')
+  await page.waitForSelector('.menu-screen--combat', { timeout: 10000 })
+  await page.click('.mode-tile--team')
+  await page.waitForSelector('.menu-screen--team', { timeout: 10000 })
+  await page.click('.mode-tile--urban')
   await page.waitForSelector('.entry-screen', { timeout: 10000 })
   await page.click('.entry-panel--create .primary-button')
   await page.waitForSelector('.lobby-screen', { timeout: 30000 })

@@ -1,5 +1,6 @@
 import Human from '@vladmandic/human'
 import type { Config, Input, Result } from '@vladmandic/human'
+import { MAIN_DETECTION_CONFIG } from './config'
 
 let instance: Human | null = null
 let loading: Promise<Human> | null = null
@@ -57,7 +58,13 @@ function buildConfig(backend: 'webgl' | 'cpu'): Partial<Config> {
       skipTime: 0
     },
     hand: { enabled: false },
-    object: { enabled: false },
+    object: {
+      enabled: false,
+      modelPath: 'centernet.json',
+      maxDetected: 6,
+      minConfidence: 0.3,
+      iouThreshold: 0.4
+    },
     gesture: { enabled: false },
     segmentation: { enabled: false }
   }
@@ -131,10 +138,13 @@ export function warmupHuman(): Promise<void> {
  * Human is not re-entrant. Serialize all detections so the lobby enrollment
  * modal and the battle loop can share a single model instance safely.
  */
-export function detectWithHuman(input: Input): Promise<Result> {
+export function detectWithHuman(
+  input: Input,
+  config: Partial<Config> = MAIN_DETECTION_CONFIG
+): Promise<Result> {
   const next = queue.then(async () => {
     const human = await getHuman()
-    return human.detect(input)
+    return human.detect(input, config)
   })
   queue = next.catch(() => undefined)
   return next

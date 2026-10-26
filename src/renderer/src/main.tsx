@@ -3,6 +3,7 @@ import { App } from './App'
 import './styles/global.css'
 import './styles/home.css'
 import './styles/screens.css'
+import './styles/long-march.css'
 import './styles/battle.css'
 
 const root = document.getElementById('root')

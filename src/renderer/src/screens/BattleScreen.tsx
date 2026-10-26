@@ -11,9 +11,12 @@ import { deriveFieldOutcome } from '@shared/fieldLog'
 import { useCamera } from '../hooks/useCamera'
 import { useServerClock } from '../hooks/useServerClock'
 import { BattleScene, type LockState } from '../game/BattleScene'
+import { UniformOverlay } from '../game/UniformOverlay'
 import { VisionEngine, type VisionFrameResult } from '../vision/engine'
+import { OverlayDetector } from '../vision/overlayDetector'
 import { audio } from '../game/audio'
 import { formatClock } from '../utils/format'
+import { teamLabel, teamShortLabel } from '../utils/teamLabels'
 import type { RoomSession } from '../types'
 import {
   endFieldSession,
@@ -105,7 +108,10 @@ export function BattleScreen({
   const { videoRef, status: cameraStatus, error: cameraError, resolution, start: startCamera } =
     camera
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const uniformCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const sceneRef = useRef<BattleScene | null>(null)
+  const overlayRendererRef = useRef<UniformOverlay | null>(null)
+  const overlayDetectorRef = useRef<OverlayDetector | null>(null)
   const engineRef = useRef<VisionEngine | null>(null)
   const engineStartedRef = useRef(false)
   const sessionRef = useRef(session)
@@ -359,6 +365,39 @@ export function BattleScreen({
   useEffect(() => {
     engineRef.current?.setSession(session.gallery, session.selfId)
   }, [session.gallery, session.selfId])
+
+  // --- Uniform overlay (Long March) ---------------------------------------
+  useEffect(() => {
+    if (session.mode !== 'long-march' || cameraStatus !== 'ready') return undefined
+    const canvas = uniformCanvasRef.current
+    const video = videoRef.current
+    if (!canvas || !video) return undefined
+
+    let renderer: UniformOverlay
+    let detector: OverlayDetector
+    try {
+      renderer = new UniformOverlay(canvas, video)
+      detector = new OverlayDetector()
+    } catch (error) {
+      console.warn('[battle] uniform overlay unavailable', error)
+      return undefined
+    }
+
+    overlayRendererRef.current = renderer
+    overlayDetectorRef.current = detector
+    detector.setSession(session.gallery, session.selfId)
+    const detach = detector.onPeople((people) => renderer.setPeople(people))
+    renderer.start()
+    detector.start(video)
+
+    return () => {
+      detach()
+      detector.stop()
+      renderer.stop()
+      overlayDetectorRef.current = null
+      overlayRendererRef.current = null
+    }
+  }, [session.mode, session.gallery, session.selfId, cameraStatus, videoRef])
 
   useEffect(() => {
     engineRef.current?.setQuality(settings.detectionQuality)
@@ -623,7 +662,9 @@ export function BattleScreen({
         : lock.state === 'unknown'
           ? '目标未识别'
           : ''
-  const teamLabel = lock.team === 'red' ? '红队' : lock.team === 'blue' ? '蓝队' : null
+  const lockedTeamLabel = lock.team
+    ? teamLabel(lock.team, session.mode)
+    : null
   const lockLabelClass =
     lock.team === 'red'
       ? 'lock-label--team-red'
@@ -645,6 +686,14 @@ export function BattleScreen({
       onContextMenu={(event) => event.preventDefault()}
     >
       <video ref={videoRef} className="battle-video" autoPlay muted playsInline />
+      {session.mode === 'long-march' && (
+        <canvas
+          ref={uniformCanvasRef}
+          className="battle-uniform-canvas"
+          data-uniform-overlay="true"
+          aria-hidden="true"
+        />
+      )}
       <canvas ref={canvasRef} className="battle-canvas" />
       <div className="battle-vignette" aria-hidden="true" />
       <div className={`damage-vignette ${damageFlash ? 'is-active' : ''}`} aria-hidden="true" />
@@ -653,7 +702,7 @@ export function BattleScreen({
         <div className="battle-top">
           <div className="score-board">
             <div className="score-board__side score-board__side--red">
-              <span>RED</span>
+              <span>{teamLabel('red', session.mode)}</span>
               <strong>{room.score.red}</strong>
             </div>
             <div className="score-board__timer">
@@ -663,7 +712,7 @@ export function BattleScreen({
               </small>
             </div>
             <div className="score-board__side score-board__side--blue">
-              <span>BLUE</span>
+              <span>{teamLabel('blue', session.mode)}</span>
               <strong>{room.score.blue}</strong>
             </div>
           </div>
@@ -694,7 +743,7 @@ export function BattleScreen({
                 {player.id === session.selfId ? '（你）' : ''}
               </span>
               <span className="roster-team">
-                {player.team === 'red' ? '红' : player.team === 'blue' ? '蓝' : '—'}
+                {player.team ? teamShortLabel(player.team, session.mode) : '—'}
               </span>
               <span className="roster-hp">{player.alive ? Math.round(player.hp) : 0}</span>
             </div>
@@ -726,7 +775,7 @@ export function BattleScreen({
               {invulnerable && <span className="chip chip--blue">复活保护</span>}
               {self?.team && (
                 <span className={`chip chip--${self.team}`}>
-                  {self.team === 'red' ? '红队' : '蓝队'}
+                  {teamLabel(self.team, session.mode)}
                 </span>
               )}
               <span className={`chip ${visionWarm ? 'chip--green' : 'chip--amber'}`}>
@@ -742,8 +791,10 @@ export function BattleScreen({
             <div>
               <strong>
                 {lock.state === 'none' ? '未锁定目标' : lockText}
-                {teamLabel && lock.team && (
-                  <span className={`lock-team lock-team--${lock.team}`}>{teamLabel}</span>
+                {lockedTeamLabel && lock.team && (
+                  <span className={`lock-team lock-team--${lock.team}`}>
+                    {lockedTeamLabel}
+                  </span>
                 )}
               </strong>
               <span>
@@ -780,8 +831,10 @@ export function BattleScreen({
         {lock.state !== 'none' && (
           <div className={`lock-label ${lockLabelClass}`}>
             {lockText}
-            {teamLabel && lock.team && (
-              <span className={`lock-team lock-team--${lock.team}`}>{teamLabel}</span>
+            {lockedTeamLabel && lock.team && (
+              <span className={`lock-team lock-team--${lock.team}`}>
+                {lockedTeamLabel}
+              </span>
             )}
           </div>
         )}

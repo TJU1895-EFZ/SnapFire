@@ -24,6 +24,7 @@ import {
 } from '../components/Icons'
 import { copyToClipboard } from '../utils/clipboard'
 import { monogram } from '../utils/format'
+import { teamLabel } from '../utils/teamLabels'
 import { warmupHuman } from '../vision/human'
 import type { RoomSession } from '../types'
 
@@ -253,7 +254,11 @@ export function LobbyScreen({
           <IconArrowLeft />
         </button>
         <div className="subpage-title">
-          <span className="eyebrow">TEAM DEATHMATCH / URBAN / LOBBY</span>
+          <span className="eyebrow">
+            {session.mode === 'long-march'
+              ? 'TEAM DEATHMATCH / LONG MARCH / LOBBY'
+              : 'TEAM DEATHMATCH / URBAN / LOBBY'}
+          </span>
           <h2>房间大厅</h2>
         </div>
         <div className="lobby-header__room">
@@ -373,7 +378,10 @@ export function LobbyScreen({
               已连接 · {connected.length} / 6 人
             </span>
             <span className="lobby-mode">
-              <IconCrosshair /> 巷战 · 室内 · 最远 10 米
+              <IconCrosshair />{' '}
+              {session.mode === 'long-march'
+                ? '长征 90 周年 · 红军 vs 国民党军'
+                : '巷战 · 室内 · 最远 10 米'}
             </span>
             <span className="lobby-mode">
               <IconWifi /> 局域网
@@ -394,10 +402,10 @@ export function LobbyScreen({
               {me && !me.team && (
                 <div className="unassigned-strip__actions">
                   <button className="team-join team-join--red" onClick={() => joinTeam('red')} disabled={red.length >= MAX_TEAM_SIZE}>
-                    加入红队
+                    加入{teamLabel('red', session.mode)}
                   </button>
                   <button className="team-join team-join--blue" onClick={() => joinTeam('blue')} disabled={blue.length >= MAX_TEAM_SIZE}>
-                    加入蓝队
+                    加入{teamLabel('blue', session.mode)}
                   </button>
                 </div>
               )}
@@ -407,7 +415,7 @@ export function LobbyScreen({
           <div className="teams-grid">
             <TeamColumn
               team="red"
-              title="红队"
+              title={teamLabel('red', session.mode)}
               players={red}
               selfId={session.selfId}
               currentTeam={me?.team ?? null}
@@ -420,7 +428,7 @@ export function LobbyScreen({
             </div>
             <TeamColumn
               team="blue"
-              title="蓝队"
+              title={teamLabel('blue', session.mode)}
               players={blue}
               selfId={session.selfId}
               currentTeam={me?.team ?? null}
@@ -493,7 +501,10 @@ export function LobbyScreen({
             </div>
             <ul className="checklist">
               <ChecklistItem ok={readiness.enough}>至少 2 名玩家</ChecklistItem>
-              <ChecklistItem ok={readiness.bothTeams}>红蓝双方各有玩家</ChecklistItem>
+              <ChecklistItem ok={readiness.bothTeams}>
+                {teamLabel('red', session.mode)}和{teamLabel('blue', session.mode)}
+                各有玩家
+              </ChecklistItem>
               <ChecklistItem ok={readiness.allTeams}>所有玩家已选择队伍</ChecklistItem>
               <ChecklistItem ok={readiness.allAppearance}>所有玩家完成建档</ChecklistItem>
               <ChecklistItem ok={readiness.allReady}>所有玩家已准备</ChecklistItem>
@@ -555,7 +566,7 @@ export function LobbyScreen({
               <div className="self-status__row">
                 <span>队伍</span>
                 <strong className={me?.team ? `text-${me.team}` : ''}>
-                  {me?.team === 'red' ? '红队' : me?.team === 'blue' ? '蓝队' : '未编队'}
+                  {me?.team ? teamLabel(me.team, session.mode) : '未编队'}
                 </strong>
               </div>
               <div className="self-status__row">

@@ -4,9 +4,7 @@ import { OperatorArt } from '../components/OperatorArt'
 import {
   IconChevronRight,
   IconCombat,
-  IconCrosshair,
   IconHistory,
-  IconLock,
   IconOverview,
   IconSettings,
   IconShield,
@@ -23,7 +21,8 @@ interface HomeScreenProps {
   onUpdateName: (name: string) => void
   onOpenSettings: () => void
   onOpenHistory: () => void
-  onEnterCombat: () => void
+  onRegularCombat: () => void
+  onLongMarch: () => void
 }
 
 export function HomeScreen({
@@ -33,7 +32,8 @@ export function HomeScreen({
   onUpdateName,
   onOpenSettings,
   onOpenHistory,
-  onEnterCombat
+  onRegularCombat,
+  onLongMarch
 }: HomeScreenProps): React.JSX.Element {
   const [editingName, setEditingName] = useState(false)
   const [draftName, setDraftName] = useState(profile.name)
@@ -134,9 +134,9 @@ export function HomeScreen({
             <span>总览</span>
             <span className="side-nav__hint">01</span>
           </button>
-          <button className="side-nav__item" onClick={onEnterCombat}>
+          <button className="side-nav__item" onClick={onRegularCombat}>
             <IconCombat />
-            <span>团战</span>
+            <span>作战</span>
             <span className="side-nav__hint">02</span>
           </button>
           <button className="side-nav__item" onClick={onOpenHistory}>
@@ -181,37 +181,44 @@ export function HomeScreen({
 
         <div className="home-heading">
           <span className="eyebrow">TACTICAL MIXED REALITY</span>
-          <h1>团战行动</h1>
-          <p>捧起你的笔记本，把摄像头变成枪口。</p>
+          <h1>作战行动</h1>
+          <p>选择常规作战，或走进长征胜利 90 周年纪念。</p>
         </div>
 
         <div className="mode-cards">
-          <button className="mode-card mode-card--active" onClick={onEnterCombat}>
+          <button
+            className="mode-card mode-card--active home-mode-card home-mode-card--regular"
+            onClick={onRegularCombat}
+          >
             <span className="mode-card__icon">
-              <IconCrosshair />
+              <IconCombat />
             </span>
             <span className="mode-card__body">
               <span className="mode-card__title">
-                巷战（室内）
+                常规作战
                 <span className="mode-badge">可进入</span>
               </span>
-              <span className="mode-card__meta">3V3 · 最远 10 米 · 人脸 + 衣着识别</span>
+              <span className="mode-card__meta">单人 · 团战 · 夺旗 · 拆弹</span>
             </span>
             <IconChevronRight className="mode-card__arrow" />
           </button>
 
-          <div className="mode-card mode-card--locked">
+          <button
+            className="mode-card mode-card--active mode-card--campaign home-mode-card home-mode-card--campaign"
+            onClick={onLongMarch}
+          >
             <span className="mode-card__icon">
-              <IconLock />
+              <IconShield />
             </span>
             <span className="mode-card__body">
               <span className="mode-card__title">
-                野战（室外）
-                <span className="mode-badge mode-badge--locked">敬请期待</span>
+                长征胜利 90 周年纪念
+                <span className="mode-badge mode-badge--campaign">纪念</span>
               </span>
-              <span className="mode-card__meta">室外模式正在开发中</span>
+              <span className="mode-card__meta">导读 · 常规 · 历史场景</span>
             </span>
-          </div>
+            <IconChevronRight className="mode-card__arrow" />
+          </button>
         </div>
       </main>
 

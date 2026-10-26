@@ -11,6 +11,8 @@ import type {
 export type Team = 'red' | 'blue'
 export type MatchPhase = 'lobby' | 'countdown' | 'playing' | 'ended'
 export type GameMode = 'urban'
+/** Client-side presentation of the same room rules. */
+export type CombatMode = 'urban' | 'long-march'
 export type EnrollmentView = 'front' | 'back' | 'left' | 'right' | 'other'
 export type DetectionQuality = 'performance' | 'balanced' | 'accurate'
 

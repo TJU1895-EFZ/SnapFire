@@ -1,11 +1,49 @@
 import { describe, expect, it } from 'vitest'
 import {
   clothingSimilarity,
+  computeTorsoCropRect,
   matchIdentity
 } from '@renderer/vision/descriptors'
 import { makeClothing, makeGalleryEntry } from './helpers/fixtures'
 
 const noFace = (): number => 0
+
+describe('computeTorsoCropRect', () => {
+  it('builds a valid crop from a body box without pose keypoints', () => {
+    const crop = computeTorsoCropRect(480, 720, [0.25, 0.1, 0.5, 0.8], null, null)
+    expect(crop).not.toBeNull()
+    if (!crop) return
+    expect(crop.x).toBeGreaterThanOrEqual(0)
+    expect(crop.y).toBeGreaterThanOrEqual(0)
+    expect(crop.x + crop.width).toBeLessThanOrEqual(480)
+    expect(crop.y + crop.height).toBeLessThanOrEqual(720)
+    expect(crop.width).toBeGreaterThan(100)
+    expect(crop.height).toBeGreaterThan(200)
+  })
+
+  it('uses normalized pose keypoints when they are available', () => {
+    const crop = computeTorsoCropRect(
+      480,
+      720,
+      [0.2, 0.1, 0.6, 0.8],
+      { left: [0.35, 0.2], right: [0.65, 0.2] },
+      { left: [0.38, 0.55], right: [0.62, 0.55] }
+    )
+    expect(crop).not.toBeNull()
+    if (!crop) return
+    expect(crop.y).toBeGreaterThan(100)
+    expect(crop.y).toBeLessThan(180)
+    expect(crop.width).toBeGreaterThan(150)
+    expect(crop.width).toBeLessThan(220)
+  })
+
+  it('rejects a zero-sized source or a degenerate body box', () => {
+    expect(computeTorsoCropRect(0, 720, [0.2, 0.2, 0.5, 0.5], null, null)).toBeNull()
+    expect(
+      computeTorsoCropRect(480, 720, [0.99, 0.99, 0.02, 0.02], null, null)
+    ).toBeNull()
+  })
+})
 
 describe('clothingSimilarity', () => {
   it('scores an identical descriptor close to 1', () => {

@@ -1,4 +1,4 @@
-import type { MatchResult, ProfileData } from '@shared/types'
+import type { CombatMode, MatchResult, ProfileData } from '@shared/types'
 import {
   IconCheck,
   IconCrosshair,
@@ -9,6 +9,7 @@ import {
   IconUsers
 } from '../components/Icons'
 import { formatPercent } from '../utils/format'
+import { teamLabel } from '../utils/teamLabels'
 import type { RoomSession } from '../types'
 
 interface ResultsScreenProps {
@@ -19,9 +20,13 @@ interface ResultsScreenProps {
   onLeave: () => void
 }
 
-function outcomeLabel(result: MatchResult, team: 'red' | 'blue' | null): string {
+function outcomeLabel(
+  result: MatchResult,
+  team: 'red' | 'blue' | null,
+  mode: CombatMode
+): string {
   if (result.winner === 'draw') return '平局'
-  if (team === null) return result.winner === 'red' ? '红队获胜' : '蓝队获胜'
+  if (team === null) return `${teamLabel(result.winner, mode)}获胜`
   return result.winner === team ? '胜利' : '失败'
 }
 
@@ -50,7 +55,7 @@ export function ResultsScreen({
 
   const me = result.players.find((player) => player.id === profile.id)
   const myTeam = me?.team ?? null
-  const myOutcome = outcomeLabel(result, myTeam)
+  const myOutcome = outcomeLabel(result, myTeam, session.mode)
   const sortedPlayers = [...result.players].sort((a, b) => {
     if (b.kills !== a.kills) return b.kills - a.kills
     if (a.deaths !== b.deaths) return a.deaths - b.deaths
@@ -65,7 +70,11 @@ export function ResultsScreen({
           <IconCrosshair />
           <span>SNAPFIRE // MATCH REPORT</span>
         </div>
-        <span className="eyebrow">URBAN TEAM DEATHMATCH</span>
+        <span className="eyebrow">
+          {session.mode === 'long-march'
+            ? 'LONG MARCH · TEAM DEATHMATCH'
+            : 'URBAN TEAM DEATHMATCH'}
+        </span>
       </header>
 
       <main className="results-main">
@@ -74,9 +83,7 @@ export function ResultsScreen({
           <h1>
             {result.winner === 'draw'
               ? '平局'
-              : result.winner === 'red'
-                ? '红队获胜'
-                : '蓝队获胜'}
+              : `${teamLabel(result.winner, session.mode)}获胜`}
           </h1>
           {myTeam && (
             <p className={`results-outcome results-outcome--${myOutcome === '胜利' ? 'win' : myOutcome === '失败' ? 'loss' : 'draw'}`}>
@@ -85,18 +92,19 @@ export function ResultsScreen({
           )}
           <div className="results-score">
             <div className="results-score__side results-score__side--red">
-              <span>红队</span>
+              <span>{teamLabel('red', session.mode)}</span>
               <strong>{result.score.red}</strong>
             </div>
             <span className="results-score__divider">:</span>
             <div className="results-score__side results-score__side--blue">
-              <span>蓝队</span>
+              <span>{teamLabel('blue', session.mode)}</span>
               <strong>{result.score.blue}</strong>
             </div>
           </div>
           <div className="results-meta">
             <span>
-              <IconCrosshair /> 巷战 · 室内
+              <IconCrosshair />{' '}
+              {session.mode === 'long-march' ? '长征 90 周年 · 常规' : '巷战 · 室内'}
             </span>
             <span>
               <IconShield /> {result.durationMin} 分钟 / {result.killLimit} 杀
@@ -136,7 +144,7 @@ export function ResultsScreen({
                   </td>
                   <td>
                     <span className={`team-pill team-pill--${player.team}`}>
-                      {player.team === 'red' ? '红队' : '蓝队'}
+                      {teamLabel(player.team, session.mode)}
                     </span>
                   </td>
                   <td className="mono">{player.kills}</td>

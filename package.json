@@ -16,7 +16,8 @@
     "test:smoke": "npm run build && node scripts/smoke.mjs",
     "prepare:mobile": "node scripts/prepare-mobile-dist.mjs",
     "dist:win": "node scripts/prepare-mobile-dist.mjs --optional && npm run build && electron-builder --win --x64 --publish never",
-    "smoke:mobile": "npm run build && node scripts/smoke-mobile.mjs"
+    "smoke:mobile": "npm run build && node scripts/smoke-mobile.mjs",
+    "smoke:long-march": "npm run build && node scripts/smoke-long-march.mjs"
   },
   "dependencies": {
     "node-forge": "^1.4.0",
