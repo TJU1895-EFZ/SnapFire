@@ -2,11 +2,13 @@
 
 SnapFire（SnapFire MR 实景枪战）是一款面向真实场地的**混合现实（MR）真人枪战应用**。玩家各自捧着 Windows 笔记本，把摄像头当作枪口、屏幕当作瞄准镜，在真实房间里移动、瞄准、射击。
 
-> **当前版本：v1.0.0（最新稳定版）；v1.1.0-rc.1 预发布。**
+> **当前版本：v1.2.0（最新稳定版）。**
 >
-> v1.1.0-rc.1 新增可选手机客户端：桌面创建房间时自动启动 HTTPS/WSS 服务，大厅显示二维码/安装页；手机扫码安装一次 CA 后即可加入。
+> v1.2.0 新增“常规作战 / 长征胜利 90 周年纪念”两级菜单、长征导读与历史场景、红军/国民党军阵营和屏幕内换装；桌面端同步获得步枪连发、手枪和换枪动画。
 >
-> 首个可玩模式是「团战 → 巷战（室内）」。**团战不是产品的全部**：SnapFire 的目标是让真人枪战在普通笔记本上落地，后续会扩展野战（室外）和其他真人枪战玩法。v1.0.0 已完成真实双机/真人现场验收（2026-10-24 LAN 房间 2 场实战，4~5 人参与，红线 0 错误归属）。
+> v1.1.0-rc.1 引入可选手机客户端：桌面创建房间时自动启动 HTTPS/WSS 服务，大厅显示二维码/安装页；手机扫码安装一次 CA 后即可加入。
+>
+> 目前可玩「常规作战 → 团战 → 巷战」和「长征 90 周年 → 常规」。**团战不是产品的全部**：SnapFire 的目标是让真人枪战在普通笔记本上落地，后续会扩展野战（室外）和其他真人枪战玩法。基础巷战已完成真实双机/真人现场验收（2026-10-24 LAN 房间 2 场实战，4~5 人参与，红线 0 错误归属）；v1.2.0 新增玩法尚未做真人现场验收。
 
 ---
 
@@ -74,7 +76,7 @@ SnapFire（SnapFire MR 实景枪战）是一款面向真实场地的**混合现�
 - 排行榜、商城、皮肤、语音、观战、回放
 - 自动匹配/排位
 - 断线重连、复杂反作弊
-- 正式安装包/自动更新（v1.0.0 以便携 zip 分发）
+- 正式安装包/自动更新（v1.2.0 以便携 zip 分发）
 
 ---
 
@@ -82,17 +84,17 @@ SnapFire（SnapFire MR 实景枪战）是一款面向真实场地的**混合现�
 
 ### 3.1 普通玩家：下载 Release 便携版（推荐）
 
-v1.0.0 以便携 zip 发布：
+v1.2.0 以便携 zip 发布：
 
 1. 打开本项目的 **GitHub Releases** 页面：https://github.com/TJU1895-EFZ/SnapFire/releases
-2. 下载 `SnapFire-1.0.0-win-x64.zip` 和 `SHA256SUMS.txt`。
+2. 下载 `SnapFire-1.2.0-win-x64.zip` 和 `SHA256SUMS.txt`。
 3. 解压到任意可写目录（例如 `D:\Games\SnapFire`；不要解压到需要管理员权限的目录）。
 4. 双击 `SnapFire.exe`。
 
 可选校验（与 `SHA256SUMS.txt` 对照）：
 
 ```powershell
-Get-FileHash .\SnapFire-1.0.0-win-x64.zip -Algorithm SHA256
+Get-FileHash .\SnapFire-1.2.0-win-x64.zip -Algorithm SHA256
 ```
 
 特点：
@@ -142,7 +144,7 @@ npx electron .
 桌面端创建房间时会自动启动内嵌的 HTTPS/WSS 手机服务。手机不需要安装 App，
 浏览器打开大厅显示的地址即可加入同一房间。
 
-> v1.0.0 便携包不包含本节手机服务；v1.1.0-rc.1 预发布包已包含，使用当前源码构建也会生效。
+> v1.2.0 便携包已包含手机客户端；v1.0.0 便携包不包含本节手机服务，使用当前源码构建也会生效。
 
 准备（首次或更新手机端后）：
 
@@ -302,14 +304,14 @@ npm run build
 
 ## 6. 当前状态、限制与测试
 
-- **版本**：v1.1.0（当前源码）；v1.0.0 为上次便携版发布。真实双机/真人现场验收已完成（2026-10-24 LAN 房间 2 场实战，红线 0 错误归属）。
+- **版本**：v1.2.0（当前源码与最新稳定版）；v1.0.0 为上次完整真人验收的稳定版。基础巷战真实双机/真人现场验收已完成（2026-10-24 LAN 房间 2 场实战，红线 0 错误归属）；v1.2.0 新增玩法尚未做真人现场验收。
 - **识别距离**：设计目标最远 10 米；10 米处人脸通常不可用，主要靠衣着。逆光、暗光、相似服装会降低成功率。
 - **不误扣原则**：识别不确定时按未命中处理，不猜测目标。
 - **美术**：首页角色为原创 SVG；手臂/枪械为 Three.js 基础几何体占位模型，不是最终美术。
 - **玩法**：可玩“常规作战 → 团战 → 巷战”和“长征 90 周年 → 常规”；单人/夺旗/拆弹/野战为占位，历史场景为资料列表。身体部位伤害、换弹、多武器、排行/商城/语音/观战等未开发。
 - **网络**：局域网；无登录、无云、无公网联机；无断线重连。
 - **数据**：本地 JSON，未加密；请勿在公用电脑保存敏感照片。
-- **分发**：v1.0.0 为便携 zip，无安装包/自动更新；未签名可能触发 SmartScreen。
+- **分发**：v1.2.0 为便携 zip，无安装包/自动更新；未签名可能触发 SmartScreen。
 - **场地测试**：设置中可启用逐枪 JSONL 日志（默认关闭，仅本机，不记录图像）；流程见 `field-tests/README.md`。
 
 测试状态：
@@ -348,15 +350,15 @@ npm run dist:win
 
 产物：
 
-- `release/SnapFire-1.0.0-win-x64.zip`（约 158MB，解压后双击 `SnapFire.exe`）
+- `release/SnapFire-1.2.0-win-x64.zip`（约 160MB，解压后双击 `SnapFire.exe`）
 - `release/win-unpacked/`（本地测试用）
-- zip 内含 `README.md`、`LICENSE`、`THIRD_PARTY_NOTICES.md`、`third-party-licenses/` 和离线模型
+- zip 内含 `README.md`、`LICENSE`、`THIRD_PARTY_NOTICES.md`、`third-party-licenses/`、离线模型和手机客户端
 
 推送 tag 后，GitHub Actions 会自动构建并创建 Release（0.x 标签标为预发布；`v1.0.0` 及以后发布为 latest）：
 
 ```powershell
-git tag v1.0.0
-git push origin v1.0.0
+git tag v1.2.0
+git push origin v1.2.0
 ```
 
 完整步骤见 `RELEASE_CHECKLIST.md`；工作流文件为 `.github/workflows/release.yml`。
@@ -390,7 +392,7 @@ start-snapfire.cmd           双击启动已构建版本（源码模式）
 build/icon.ico               应用图标
 electron-builder.yml         便携 zip 打包配置
 .github/workflows/release.yml  GitHub Actions Release
-release-notes/v1.0.0.md      发布说明
+release-notes/v1.2.0.md      当前发布说明
 RELEASE_CHECKLIST.md         发布检查清单
 LICENSE                      Apache License 2.0
 THIRD_PARTY_NOTICES.md       第三方组件声明
