@@ -20,12 +20,13 @@
 > - CI SHA256：`05f2cd9b3bfd36359d208981a2aeea38347dbc67b1a461befc2d1951f36d99bc`
 > - 详细验证见 `TEST_REPORT.md` §3.7 / §3.8。
 >
-> **v1.2.0-rc.1 发布中（预发布，pre-release；v1.0.0 保持 latest）**
+> **v1.2.0-rc.1 已于 2026-10-26 发布（预发布，pre-release；v1.0.0 保持 latest）**
 >
 > - Release：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v1.2.0-rc.1
-> - Workflow：待本次 CI 完成后填写
-> - zip SHA256：待本次 CI 完成后填写
-> - 发布完成后补充下载校验和打包双实例冒烟结果。
+> - Workflow：[run 40315246300](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/40315246300) — success
+> - zip SHA256：`bca7b726f7781eeca288effeaf9d489a3ba0f422c96f024ecbad7f27f6d21dd5`
+> - 下载 zip 校验一致；解压后的 `SnapFire.exe` 双实例冒烟通过；zip 内含新版手机客户端。
+> - 原 `v1.2.0` 预发布和 tag 已删除，由本版本取代。
 >
 > **v1.0.0 已于 2026-10-24 发布（历史稳定版）**
 >
@@ -128,14 +129,14 @@ git push origin v1.2.0-rc.1
 
 ## 5. 发布后检查
 
-- [ ] Release 标题为 `SnapFire v1.2.0-rc.1 测试版`
-- [ ] Release 标记为 pre-release（v1.0.0 保持 latest）
-- [ ] 资产包含 `SnapFire-1.2.0-rc.1-win-x64.zip` + `SHA256SUMS.txt`
-- [ ] Release 正文与 `release-notes/v1.2.0-rc.1.md` 一致
-- [ ] 下载 zip 并校验 SHA256
-- [ ] 解压 Release zip，对 `SnapFire.exe` 运行完整双实例冒烟
+- [x] Release 标题为 `SnapFire v1.2.0-rc.1 测试版`
+- [x] Release 标记为 pre-release（v1.0.0 保持 latest）
+- [x] 资产包含 `SnapFire-1.2.0-rc.1-win-x64.zip` + `SHA256SUMS.txt`
+- [x] Release 正文与 `release-notes/v1.2.0-rc.1.md` 一致
+- [x] 下载 zip 并校验 SHA256
+- [x] 解压 Release zip，对 `SnapFire.exe` 运行完整双实例冒烟
 - [ ] 在一台**没有 Node.js** 的 Windows 10/11 电脑上启动，检查摄像头、模型加载、局域网加入、防火墙提示
-- [ ] 把 CI run、Release 链接、CI SHA256 记录到 README / RELEASE_CHECKLIST.md
+- [x] 把 CI run、Release 链接、CI SHA256 记录到 README / RELEASE_CHECKLIST.md
 
 ## 6. 已知风险
 
