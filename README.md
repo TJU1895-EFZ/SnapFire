@@ -322,8 +322,9 @@ npm run build
 - `npm run test:smoke`：两个 Electron 实例，假摄像头，完整走通常规作战菜单 → 巷战大厅 → 战斗 → 步枪开火 → 换手枪 → Q 换回步枪 → 按住连发 → 结算 → 战绩保存 → 返回大厅；
 - `npm run smoke:long-march`：两个 Electron 实例，验证长征导读 10 秒门禁、红军/国民党军大厅、开局和战斗换装画布；
 - `npm run smoke:mobile`：桌面内嵌手机服务的 HTTPS / WSS / 静态资源冒烟；
-- 便携 zip 已构建并测试：`release/SnapFire-1.0.0-win-x64.zip`（约 158MB）；打包后的 `SnapFire.exe` 和解压 zip 均通过完整双实例冒烟（Human 模型从 asar 离线加载），并校验场地测试 JSONL 的 `session` / `shot` / `match-end`；
-- **GitHub Release v1.0.0**：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v1.0.0；CI run 40074274452 通过；下载校验一致，解压后完整冒烟通过；
+- 便携 zip 已构建并测试：`release/SnapFire-1.2.0-win-x64.zip`（约 176MB）；打包后的 `SnapFire.exe` 和解压 zip 均通过完整双实例冒烟（Human 模型从 asar 离线加载），并校验场地测试 JSONL 的 `session` / `shot` / `match-end`；
+- **GitHub Release v1.2.0**：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v1.2.0；CI run [40311419813](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/40311419813) 通过；Release 标记 **Latest**；zip SHA256 `e7daaf128797fdf4a13fd7d34a7a818e29ce60f30632e975433423e1b8381f79`；下载解压后完整双实例冒烟通过；zip 内含新版手机客户端、CenterNet 与军服素材；
+- 历史稳定版 v1.0.0：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v1.0.0；CI run 40074274452 通过；真实双机验收结论仍适用于基础巷战；
 - 真实双机/真人识别：2026-10-24 LAN 房间 2 场实战通过（红线 0 错误归属）；6 米/10 米测量场、6 人房间、连续 3 局稳定性测试未进行。
 
 ---
