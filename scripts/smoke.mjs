@@ -263,9 +263,51 @@ try {
     throw new Error(`Expected an unrecognised-target response, got: ${shotFeedback}`)
   }
 
+  // Weapon switch: rifle -> pistol. The new view model animates down/up.
+  const weaponButton = host.page.locator('.weapon-switch__button')
+  await weaponButton.click()
+  await host.page.waitForFunction(
+    () =>
+      document
+        .querySelector('.weapon-switch__button')
+        ?.textContent?.includes('手枪') ?? false,
+    null,
+    { timeout: 5000 }
+  )
+  await host.page.screenshot({ path: join(artifactsDir, '11b-battle-pistol.png') })
+
+  // Pistol is semi-automatic: one shot per click.
+  await host.page.mouse.click(760, 500)
+  await host.page.waitForTimeout(3000)
+
+  // Q switches back to the rifle.
+  await host.page.keyboard.press('q')
+  await host.page.waitForFunction(
+    () =>
+      document
+        .querySelector('.weapon-switch__button')
+        ?.textContent?.includes('步枪') ?? false,
+    null,
+    { timeout: 5000 }
+  )
+
+  // Hold the trigger: the rifle should send a burst, not a single shot.
+  await host.page.mouse.move(760, 500)
+  await host.page.mouse.down()
+  await host.page.waitForTimeout(6000)
+  await host.page.mouse.up()
+  await host.page.waitForTimeout(3000)
+  await host.page.screenshot({ path: join(artifactsDir, '11c-battle-burst.png') })
+
   const fieldLog = await readFieldLog(hostData)
   const fieldSession = fieldLog.entries.find((entry) => entry.type === 'session')
   const fieldShot = fieldLog.entries.find((entry) => entry.type === 'shot')
+  const shotEntries = fieldLog.entries.filter((entry) => entry.type === 'shot')
+  if (shotEntries.length < 3) {
+    throw new Error(
+      `Expected at least rifle + pistol + burst shots, got ${shotEntries.length}`
+    )
+  }
   if (!fieldSession) {
     throw new Error('Field-test JSONL is missing the session entry')
   }

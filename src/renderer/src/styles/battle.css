@@ -451,6 +451,60 @@
   letter-spacing: 0.1em;
 }
 
+.weapon-switch {
+  pointer-events: auto;
+}
+
+.weapon-switch__button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  min-width: 156px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255, 164, 43, 0.4);
+  background: rgba(7, 10, 11, 0.72);
+  color: var(--text);
+  text-align: right;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  backdrop-filter: blur(8px);
+  transition: border-color 0.14s ease, background 0.14s ease;
+}
+
+.weapon-switch__button:hover:not(:disabled) {
+  border-color: var(--amber);
+  background: rgba(255, 164, 43, 0.12);
+}
+
+.weapon-switch__button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.weapon-switch__button.is-switching {
+  border-style: dashed;
+}
+
+.weapon-switch__name {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--amber);
+}
+
+.weapon-switch__mode {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
+.weapon-switch__button small {
+  font-size: 8px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
 .crosshair {
   position: absolute;
   left: 50%;

@@ -106,6 +106,45 @@ class AudioEngine {
     }
   }
 
+  pistolShot(): void {
+    if (this.volume <= 0) return
+    try {
+      const ctx = this.ensure()
+      const start = ctx.currentTime
+      const noise = ctx.createBufferSource()
+      noise.buffer = this.noiseBuffer(ctx, 0.11, 4.2)
+      const band = ctx.createBiquadFilter()
+      band.type = 'bandpass'
+      band.frequency.setValueAtTime(2400, start)
+      band.frequency.exponentialRampToValueAtTime(820, start + 0.1)
+      band.Q.value = 0.9
+      const noiseGain = ctx.createGain()
+      noiseGain.gain.setValueAtTime(0.72, start)
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, start + 0.1)
+      noise.connect(band)
+      band.connect(noiseGain)
+      if (this.master) noiseGain.connect(this.master)
+      noise.start(start)
+      noise.stop(start + 0.12)
+
+      this.tone(ctx, 'sine', 220, 72, 0.1, 0.5)
+      this.tone(ctx, 'triangle', 1450, 620, 0.035, 0.2)
+    } catch {
+      // Audio is non-critical.
+    }
+  }
+
+  weaponSwitch(): void {
+    if (this.volume <= 0) return
+    try {
+      const ctx = this.ensure()
+      this.tone(ctx, 'square', 860, 700, 0.03, 0.055)
+      this.tone(ctx, 'square', 1180, 960, 0.035, 0.05, 0.09)
+    } catch {
+      // ignore
+    }
+  }
+
   hit(): void {
     if (this.volume <= 0) return
     try {

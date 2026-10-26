@@ -102,11 +102,16 @@ export class VisionEngine {
   }
 
   /**
-   * Used when the player fires. Reuses a very recent analysis if possible and
+   * Used when the player fires. Reuses a recent analysis if possible and
    * otherwise waits for a fresh one so the shot is judged on the current frame.
+   * Automatic fire passes a wider window so the burst keeps its cadence while
+   * the background loop keeps refreshing identities.
    */
-  async analyzeNow(): Promise<VisionFrameResult | null> {
-    if (this.lastResult && Date.now() - this.lastResult.at < 100) {
+  async analyzeNow(maxAgeMs = 100): Promise<VisionFrameResult | null> {
+    if (
+      this.lastResult &&
+      Date.now() - this.lastResult.at < Math.max(0, maxAgeMs)
+    ) {
       return this.lastResult
     }
     return this.perform()

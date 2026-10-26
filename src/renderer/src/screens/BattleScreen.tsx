@@ -11,6 +11,14 @@ import { deriveFieldOutcome } from '@shared/fieldLog'
 import { useCamera } from '../hooks/useCamera'
 import { useServerClock } from '../hooks/useServerClock'
 import { BattleScene, type LockState } from '../game/BattleScene'
+import { TriggerLatch } from '../game/TriggerLatch'
+import {
+  DEFAULT_WEAPON,
+  WEAPONS,
+  nextWeapon,
+  switchDuration,
+  type WeaponId
+} from '../game/weapons'
 import { UniformOverlay } from '../game/UniformOverlay'
 import { VisionEngine, type VisionFrameResult } from '../vision/engine'
 import { OverlayDetector } from '../vision/overlayDetector'
@@ -120,6 +128,21 @@ export function BattleScreen({
   const lastFireRef = useRef(0)
   const resolvingRef = useRef(false)
   const onLeaveRef = useRef(onLeave)
+  const weaponRef = useRef<WeaponId>(DEFAULT_WEAPON)
+  const weaponSwitchingRef = useRef(false)
+  const fireRef = useRef<() => Promise<void>>(async () => undefined)
+  const latchRef = useRef<TriggerLatch | null>(null)
+  const switchTimerRef = useRef<number | null>(null)
+  if (latchRef.current === null) {
+    const spec = WEAPONS[DEFAULT_WEAPON]
+    latchRef.current = new TriggerLatch(
+      () => fireRef.current(),
+      spec.fireMode,
+      spec.fireIntervalMs
+    )
+  }
+  const [weapon, setWeapon] = useState<WeaponId>(DEFAULT_WEAPON)
+  const [weaponSwitching, setWeaponSwitching] = useState(false)
   const [lock, setLock] = useState<LockInfo>({ state: 'none' })
   const [feedback, setFeedback] = useState<Feedback | null>(null)
   const [hitMarker, setHitMarker] = useState(0)
@@ -167,6 +190,32 @@ export function BattleScreen({
     onLeaveRef.current = onLeave
   }, [onLeave])
 
+  useEffect(() => {
+    weaponRef.current = weapon
+    const spec = WEAPONS[weapon]
+    latchRef.current?.setMode(spec.fireMode, spec.fireIntervalMs)
+  }, [weapon])
+
+  useEffect(() => {
+    const release = (): void => latchRef.current?.release()
+    const onVisibility = (): void => {
+      if (document.hidden) release()
+    }
+    window.addEventListener('mouseup', release)
+    window.addEventListener('blur', release)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('mouseup', release)
+      window.removeEventListener('blur', release)
+      document.removeEventListener('visibilitychange', onVisibility)
+      latchRef.current?.dispose()
+      if (switchTimerRef.current !== null) {
+        window.clearTimeout(switchTimerRef.current)
+        switchTimerRef.current = null
+      }
+    }
+  }, [])
+
   const selfPlayer = useMemo(
     () => session.room.players.find((player) => player.id === session.selfId) ?? null,
     [session.room.players, session.selfId]
@@ -175,6 +224,12 @@ export function BattleScreen({
   useEffect(() => {
     selfTeamRef.current = selfPlayer?.team ?? null
   }, [selfPlayer?.team])
+
+  useEffect(() => {
+    if (session.room.phase !== 'playing' || !selfPlayer?.alive) {
+      latchRef.current?.release()
+    }
+  }, [session.room.phase, selfPlayer?.alive])
 
   // --- Field test logging ---------------------------------------------------
   const fieldCandidates = useMemo(
@@ -458,20 +513,23 @@ export function BattleScreen({
   }, [damageFlash])
 
   // --- Fire ----------------------------------------------------------------
-  const fire = useCallback(() => {
+  const fire = useCallback((): Promise<void> => {
     const current = sessionRef.current
     const room = current.room
-    if (room.phase !== 'playing') return
+    if (room.phase !== 'playing') return Promise.resolve()
     const self = room.players.find((player) => player.id === current.selfId)
-    if (!self?.alive) return
+    if (!self?.alive) return Promise.resolve()
+    if (weaponSwitchingRef.current) return Promise.resolve()
+    const spec = WEAPONS[weaponRef.current]
     const now = performance.now()
-    if (now - lastFireRef.current < 250) return
-    if (resolvingRef.current) return
+    if (now - lastFireRef.current < spec.fireIntervalMs) return Promise.resolve()
+    if (resolvingRef.current) return Promise.resolve()
     lastFireRef.current = now
     resolvingRef.current = true
     audio.unlock()
     sceneRef.current?.fire()
-    audio.gunshot()
+    if (weaponRef.current === 'pistol') audio.pistolShot()
+    else audio.gunshot()
 
     const fieldSession = settingsRef.current.fieldTestLog
       ? getFieldSessionId()
@@ -503,10 +561,11 @@ export function BattleScreen({
           recognizedName: null
         })
       }
-      return
+      return Promise.resolve()
     }
-    void engine
-      .analyzeNow()
+    const maxAgeMs = spec.fireMode === 'auto' ? 420 : 180
+    return engine
+      .analyzeNow(maxAgeMs)
       .then((result) => {
         const live = sessionRef.current
         const liveSelf = live.room.players.find((player) => player.id === live.selfId)
@@ -586,6 +645,51 @@ export function BattleScreen({
       })
   }, [finalizePendingShot])
 
+  useEffect(() => {
+    fireRef.current = fire
+  }, [fire])
+
+  const handleTriggerStart = useCallback((): void => {
+    const current = sessionRef.current
+    const self = current.room.players.find((player) => player.id === current.selfId)
+    if (
+      current.room.phase !== 'playing' ||
+      !self?.alive ||
+      weaponSwitchingRef.current
+    ) {
+      return
+    }
+    latchRef.current?.press()
+  }, [])
+
+  const handleTriggerEnd = useCallback((): void => {
+    latchRef.current?.release()
+  }, [])
+
+  const handleSwitchWeapon = useCallback((): void => {
+    if (weaponSwitchingRef.current) return
+    const current = weaponRef.current
+    const next = nextWeapon(current)
+    const spec = WEAPONS[next]
+
+    latchRef.current?.release()
+    weaponRef.current = next
+    weaponSwitchingRef.current = true
+    setWeapon(next)
+    setWeaponSwitching(true)
+    sceneRef.current?.switchWeapon(next)
+    audio.weaponSwitch()
+
+    if (switchTimerRef.current !== null) {
+      window.clearTimeout(switchTimerRef.current)
+    }
+    switchTimerRef.current = window.setTimeout(() => {
+      switchTimerRef.current = null
+      weaponSwitchingRef.current = false
+      setWeaponSwitching(false)
+    }, switchDuration(spec))
+  }, [])
+
   const requestLeave = useCallback(() => {
     if (window.confirm('确定离开本局吗？离开后将回到首页。')) {
       onLeaveRef.current()
@@ -621,15 +725,34 @@ export function BattleScreen({
           return
         }
         event.preventDefault()
-        fire()
+        handleTriggerStart()
+      } else if (event.code === 'KeyQ' && !event.repeat) {
+        if (target && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target.tagName)) {
+          return
+        }
+        event.preventDefault()
+        handleSwitchWeapon()
       } else if (event.code === 'Escape') {
         event.preventDefault()
         requestLeave()
       }
     }
+    const onKeyUp = (event: KeyboardEvent): void => {
+      if (event.code === 'Space') handleTriggerEnd()
+    }
     window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [fire, requestLeave, chooseIntended])
+    window.addEventListener('keyup', onKeyUp)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('keyup', onKeyUp)
+    }
+  }, [
+    handleSwitchWeapon,
+    handleTriggerEnd,
+    handleTriggerStart,
+    requestLeave,
+    chooseIntended
+  ])
 
   const room = session.room
   const self = selfPlayer
@@ -680,9 +803,13 @@ export function BattleScreen({
       onMouseDown={(event) => {
         if (event.button === 0) {
           event.preventDefault()
-          fire()
+          handleTriggerStart()
         }
       }}
+      onMouseUp={(event) => {
+        if (event.button === 0) handleTriggerEnd()
+      }}
+      onMouseLeave={handleTriggerEnd}
       onContextMenu={(event) => event.preventDefault()}
     >
       <video ref={videoRef} className="battle-video" autoPlay muted playsInline />
@@ -814,8 +941,32 @@ export function BattleScreen({
               </span>
             </div>
           </div>
+          <div className="weapon-switch">
+            <button
+              type="button"
+              className={`weapon-switch__button ${
+                weaponSwitching ? 'is-switching' : ''
+              }`}
+              onMouseDown={(event) => event.stopPropagation()}
+              onClick={handleSwitchWeapon}
+              disabled={weaponSwitching}
+              title="切换武器（Q）"
+            >
+              <span className="weapon-switch__name">
+                {weaponSwitching ? '换枪中…' : WEAPONS[weapon].name}
+              </span>
+              <span className="weapon-switch__mode">
+                {weaponSwitching ? ' ' : WEAPONS[weapon].fireModeLabel}
+              </span>
+              <small>
+                {weaponSwitching
+                  ? ' '
+                  : `Q 换${WEAPONS[nextWeapon(weapon)].name}`}
+              </small>
+            </button>
+          </div>
           <div className="fire-hint">
-            <span>空格 / 鼠标左键</span>
+            <span>空格 / 鼠标左键 · {WEAPONS[weapon].fireModeLabel}</span>
             <strong>开火</strong>
           </div>
         </div>
