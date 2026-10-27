@@ -1,8 +1,8 @@
 # SnapFire 发布检查清单
 
-适用版本：`v1.2.0-rc.1`（便携 zip）
+适用版本：`v2.0.0`（便携 zip）
 
-> v1.2.0-rc.1 正在发布；以下历史版本记录保留。
+> v2.0.0 正在发布；以下历史版本记录保留。
 >
 > **历史版本**
 >
@@ -37,10 +37,10 @@
 
 ## 1. 发布前
 
-- [x] 确认 `package.json` 与 `package-lock.json` 版本为 `1.2.0-rc.1`（桌面端与手机端）
-- [x] 确认 `release-notes/v1.2.0-rc.1.md` 已提交
+- [x] 确认 `package.json` 与 `package-lock.json` 版本为 `2.0.0`
+- [x] 确认 `release-notes/v2.0.0.md` 已提交
 - [x] 确认 README 的当前版本、下载文件名和校验命令已更新
-- [x] 确认 v1.2.0-rc.1 新增玩法尚未做真人现场验收，Release 说明已注明
+- [x] 确认当前版本新增玩法的真人验收状态与 Release 说明一致（2026-10-27 补充验收通过；未开启逐枪日志）
 - [ ] 确认 `%APPDATA%\SnapFire\data` 中没有需要清理的本机数据
 - [ ] 确认没有把 `artifacts/`、`node_modules/`、`out/`、`release/` 加入提交
 
@@ -81,7 +81,7 @@ npm run dist:win
 
 预期产物：
 
-- `release/SnapFire-1.2.0-rc.1-win-x64.zip`
+- `release/SnapFire-2.0.0-win-x64.zip`
 - `release/win-unpacked/SnapFire.exe`（用于测试）
 
 ## 3. 验证便携包
@@ -105,7 +105,7 @@ node scripts/smoke.mjs
 3. 生成并记录 SHA256：
 
 ```powershell
-Get-FileHash .\release\SnapFire-1.2.0-rc.1-win-x64.zip -Algorithm SHA256
+Get-FileHash .\release\SnapFire-2.0.0-win-x64.zip -Algorithm SHA256
 ```
 
 ## 4. GitHub 上传与 Release
@@ -113,34 +113,34 @@ Get-FileHash .\release\SnapFire-1.2.0-rc.1-win-x64.zip -Algorithm SHA256
 ```powershell
 cd "D:\github\SnapFire-MR实景枪战"
 git add -A
-git commit -m "release: v1.2.0-rc.1"
+git commit -m "release: v2.0.0"
 git push origin main
-git tag v1.2.0-rc.1
-git push origin v1.2.0-rc.1
+git tag v2.0.0
+git push origin v2.0.0
 ```
 
 推送 tag 后，`.github/workflows/release.yml` 会：
 
 - 在 `windows-latest` 上安装依赖、类型检查、71 项测试、构建；
-- 用 electron-builder 生成 `SnapFire-1.2.0-rc.1-win-x64.zip`；
+- 用 electron-builder 生成 `SnapFire-2.0.0-win-x64.zip`；
 - 生成 `SHA256SUMS.txt`；
-- 创建 **v1.2.0-rc.1** 的 GitHub Release。tag 含 `-`，工作流会自动标记为 pre-release；v1.0.0 保持 latest。
+- 创建 **v2.0.0** 的 GitHub Release，并自动标记为 latest（v1.2.0-rc.1 保持 pre-release 历史）。
 - 0.x 版本和带后缀的 tag（如 `v1.1.0-rc.1`、`v1.2.0-rc.1`）会自动创建预发布；`v1.0.0` 及以后的普通版本 tag 默认 latest。
 
 ## 5. 发布后检查
 
-- [x] Release 标题为 `SnapFire v1.2.0-rc.1 测试版`
-- [x] Release 标记为 pre-release（v1.0.0 保持 latest）
-- [x] 资产包含 `SnapFire-1.2.0-rc.1-win-x64.zip` + `SHA256SUMS.txt`
-- [x] Release 正文与 `release-notes/v1.2.0-rc.1.md` 一致
-- [x] 下载 zip 并校验 SHA256
-- [x] 解压 Release zip，对 `SnapFire.exe` 运行完整双实例冒烟
+- [ ] Release 标题为 `SnapFire v2.0.0`
+- [ ] Release 标记为 latest（v1.2.0-rc.1 保持 pre-release）
+- [ ] 资产包含 `SnapFire-2.0.0-win-x64.zip` + `SHA256SUMS.txt`
+- [ ] Release 正文与 `release-notes/v2.0.0.md` 一致
+- [ ] 下载 zip 并校验 SHA256
+- [ ] 解压 Release zip，对 `SnapFire.exe` 运行完整双实例冒烟
 - [ ] 在一台**没有 Node.js** 的 Windows 10/11 电脑上启动，检查摄像头、模型加载、局域网加入、防火墙提示
-- [x] 把 CI run、Release 链接、CI SHA256 记录到 README / RELEASE_CHECKLIST.md
+- [ ] 把 CI run、Release 链接、CI SHA256 记录到 README / RELEASE_CHECKLIST.md
 
 ## 6. 已知风险
 
-- 真实双机/真人现场验收已完成（2026-10-24 LAN 房间实战 2 场，红线 0 错误归属）；10 米识别、逆光/相似服装下的识别率仍需后续补充测试。
+- 真实双机/真人现场验收已完成（2026-10-24 LAN 房间实战 2 场，红线 0 错误归属；2026-10-27 补充验收 2 场、3 人，聚合数据）；10 米识别、逆光/相似服装下的识别率仍需后续补充测试。
 - 未签名 exe 可能触发 SmartScreen。
 - 当前无自动更新、无安装包、无代码签名。
 - 场地测试日志默认关闭；开启后只写本机，不随备份导出。
