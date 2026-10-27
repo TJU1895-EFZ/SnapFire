@@ -322,7 +322,9 @@ npm run build
 - `npm run test:smoke`：两个 Electron 实例，假摄像头，完整走通常规作战菜单 → 巷战大厅 → 战斗 → 步枪开火 → 换手枪 → Q 换回步枪 → 按住连发 → 结算 → 战绩保存 → 返回大厅；
 - `npm run smoke:long-march`：两个 Electron 实例，验证长征导读 10 秒门禁、红军/国民党军大厅、开局和战斗换装画布；
 - `npm run smoke:mobile`：桌面内嵌手机服务的 HTTPS / WSS / 静态资源冒烟；
-- 便携 zip 由 GitHub Actions 在 tag `v2.0.0` 上构建：`SnapFire-2.0.0-win-x64.zip`（含手机客户端、CenterNet 与军服素材）；发布后回填 CI run 与 SHA256；
+- 便携 zip：`SnapFire-2.0.0-win-x64.zip`（约 176MB），CI run [40534306148](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/40534306148) 通过；zip SHA256 `ac3a02d03bf70ca43824c533f6c0a99842bd333830fd2111f41723d5471cdf31`；含手机客户端、CenterNet 与军服素材；
+- **GitHub Release v2.0.0（正式版）**：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v2.0.0；Release 标记为 latest；资产含 `SnapFire-2.0.0-win-x64.zip` + `SHA256SUMS.txt`；
+- 本地 `npm run dist:win` 产物（`release/win-unpacked/SnapFire.exe`）双实例冒烟通过（`SMOKE_OK`，含场地日志 `matchEnd`）；GitHub asset digest 与 `SHA256SUMS.txt` 一致，但因下载过慢未在本地完整复验；
 - 历史预发布 v1.2.0-rc.1：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v1.2.0-rc.1；CI run [40315246300](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/40315246300) 通过；Release 标记 **Pre-release**；zip SHA256 `bca7b726f7781eeca288effeaf9d489a3ba0f422c96f024ecbad7f27f6d21dd5`；其内容已并入 v2.0.0；
 - 历史稳定版 v1.0.0：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v1.0.0；CI run 40074274452 通过；真实双机验收结论仍适用于基础巷战；
 - 真实双机/真人识别：2026-10-24 LAN 房间 2 场实战通过（红线 0 错误归属）；2026-10-27 补充真人验收 2 场、3 人通过（以 `history.json` 聚合数据为证据，未开启逐枪日志）；6 米/10 米测量场、6 人房间、连续 3 局稳定性测试未进行。

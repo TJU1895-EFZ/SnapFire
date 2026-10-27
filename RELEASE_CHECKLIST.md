@@ -2,7 +2,13 @@
 
 适用版本：`v2.0.0`（便携 zip）
 
-> v2.0.0 正在发布；以下历史版本记录保留。
+> **v2.0.0 已于 2026-10-27 发布（正式版，latest）**
+>
+> - Release：https://github.com/TJU1895-EFZ/SnapFire/releases/tag/v2.0.0
+> - Workflow：[run 40534306148](https://github.com/TJU1895-EFZ/SnapFire/actions/runs/40534306148) — success（3m27s）
+> - zip SHA256：`ac3a02d03bf70ca43824c533f6c0a99842bd333830fd2111f41723d5471cdf31`
+> - GitHub asset digest 与 `SHA256SUMS.txt` 一致；本地 `dist:win` 产物双实例冒烟通过。
+> - GitHub 资产下载在本地网络下过慢（约 14 KB/s），未完成下载复验。
 >
 > **历史版本**
 >
@@ -129,14 +135,16 @@ git push origin v2.0.0
 
 ## 5. 发布后检查
 
-- [ ] Release 标题为 `SnapFire v2.0.0`
-- [ ] Release 标记为 latest（v1.2.0-rc.1 保持 pre-release）
-- [ ] 资产包含 `SnapFire-2.0.0-win-x64.zip` + `SHA256SUMS.txt`
-- [ ] Release 正文与 `release-notes/v2.0.0.md` 一致
-- [ ] 下载 zip 并校验 SHA256
-- [ ] 解压 Release zip，对 `SnapFire.exe` 运行完整双实例冒烟
+- [x] Release 标题为 `SnapFire v2.0.0`
+- [x] Release 标记为 latest（v1.2.0-rc.1 保持 pre-release）
+- [x] 资产包含 `SnapFire-2.0.0-win-x64.zip` + `SHA256SUMS.txt`
+- [x] Release 正文与 `release-notes/v2.0.0.md` 一致
+- [x] GitHub asset digest 与 CI `SHA256SUMS.txt` 一致
+- [ ] 下载 zip 并校验 SHA256（GitHub 下载约 14 KB/s，本地未完成）
+- [x] 对本地 `dist:win` 产物 `release/win-unpacked/SnapFire.exe` 运行完整双实例冒烟（`SMOKE_OK`）
+- [ ] 下载 Release zip 后解压，对其中 `SnapFire.exe` 运行冒烟
 - [ ] 在一台**没有 Node.js** 的 Windows 10/11 电脑上启动，检查摄像头、模型加载、局域网加入、防火墙提示
-- [ ] 把 CI run、Release 链接、CI SHA256 记录到 README / RELEASE_CHECKLIST.md
+- [x] 把 CI run、Release 链接、CI SHA256 记录到 README / RELEASE_CHECKLIST.md
 
 ## 6. 已知风险
 
